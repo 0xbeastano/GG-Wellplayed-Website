@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
 import { Calendar, Clock, Monitor, Gamepad, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -49,6 +49,7 @@ const AnimatedCounter = ({ value }: { value: number }) => {
 
 export const Booking: React.FC = () => {
   // State
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const [date, setDate] = useState('');
   const [selectedTier, setSelectedTier] = useState(TIERS[0]);
   const [selectedDuration, setSelectedDuration] = useState(DURATIONS[0]);
@@ -144,6 +145,13 @@ export const Booking: React.FC = () => {
     return new Date().toISOString().split('T')[0];
   };
 
+  // Helper to get max date (e.g., 3 months from now to prevent year 60000)
+  const getMaxDateString = () => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 3);
+    return d.toISOString().split('T')[0];
+  };
+
   return (
     <section id="booking" className="py-12 md:py-24 bg-gg-medium border-t border-gg-cyan/10 relative overflow-hidden">
       {/* Background decorations */}
@@ -167,7 +175,10 @@ export const Booking: React.FC = () => {
             <div className="space-y-6 md:space-y-10">
               {/* Date Selection */}
               <div className="relative">
-                <label className="flex items-center text-gg-cyan font-bold mb-2 md:mb-4 tracking-wide text-lg md:text-xl">
+                <label 
+                  onClick={() => dateInputRef.current?.showPicker()}
+                  className="flex items-center text-gg-cyan font-bold mb-2 md:mb-4 tracking-wide text-lg md:text-xl cursor-pointer hover:text-white transition-colors"
+                >
                   <Calendar className="mr-2 md:mr-3 w-5 h-5 md:w-6 md:h-6" /> SELECT DATE
                 </label>
                 <motion.div
@@ -175,14 +186,17 @@ export const Booking: React.FC = () => {
                   transition={{ duration: 0.4 }}
                 >
                   <input 
+                    ref={dateInputRef}
                     type="date" 
                     min={getTodayString()}
+                    max={getMaxDateString()}
                     value={date}
                     onChange={(e) => {
                       setDate(e.target.value);
                       if(errors.date) setErrors({...errors, date: undefined});
                     }}
-                    className={`w-full bg-gg-medium border rounded-xl p-3 md:p-5 text-lg md:text-xl text-white placeholder-gray-500 focus:outline-none transition-all duration-300 font-mono ${errors.date ? 'border-red-500 focus:border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'border-gray-700 focus:border-gg-cyan focus:shadow-[0_0_10px_rgba(0,217,255,0.1)]'}`}
+                    style={{ colorScheme: 'dark' }}
+                    className={`w-full bg-gg-medium border rounded-xl p-3 md:p-5 text-lg md:text-xl text-white placeholder-gray-500 focus:outline-none transition-all duration-300 font-mono cursor-pointer ${errors.date ? 'border-red-500 focus:border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'border-gray-700 focus:border-gg-cyan focus:shadow-[0_0_10px_rgba(0,217,255,0.1)]'}`}
                   />
                 </motion.div>
                 <AnimatePresence>
