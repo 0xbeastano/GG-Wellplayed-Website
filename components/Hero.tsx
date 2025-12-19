@@ -1,110 +1,188 @@
-import React, { useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { ArrowDown, Cpu, Wifi, Activity } from 'lucide-react';
+
+interface VideoConfig {
+  id: string;
+  src: string;
+  poster: string;
+  alt: string;
+  label: string;
+}
+
+const VIDEOS: VideoConfig[] = [
+  {
+    id: 'cs2',
+    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", 
+    poster: "https://picsum.photos/id/1/800/1200", 
+    alt: "CS:GO 2 Gameplay",
+    label: "CS:GO 2"
+  },
+  {
+    id: 'valorant',
+    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    poster: "https://picsum.photos/id/2/800/1200",
+    alt: "Valorant Gameplay",
+    label: "VALORANT"
+  },
+  {
+    id: 'gta',
+    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
+    poster: "https://picsum.photos/id/3/800/1200",
+    alt: "GTA V Gameplay",
+    label: "GTA V"
+  }
+];
 
 export const Hero: React.FC = () => {
+  const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isInView = useInView(containerRef);
+  
+  // Parallax Text
   const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 500], [0, 200]);
+  const yText = useTransform(scrollY, [0, 500], [0, 200]);
+  
+  // Performance State
+  const [isLowPower, setIsLowPower] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [fps, setFps] = useState(60);
 
+  // --- PERFORMANCE MONITORING ENGINE ---
+  useEffect(() => {
+    // 1. Static Checks
+    const mobileCheck = window.innerWidth < 768;
+    setIsMobile(mobileCheck);
+
+    const connection = (navigator as any).connection;
+    if (connection && ['slow-2g', '2g', '3g'].includes(connection.effectiveType)) {
+      setIsLowPower(true);
+    }
+    
+    if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
+      setIsLowPower(true);
+    }
+
+    // 2. Live FPS Monitor
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let lowFpsStrikes = 0;
+    let rafId: number;
+
+    const monitorFps = () => {
+      const now = performance.now();
+      frameCount++;
+      
+      if (now - lastTime >= 1000) {
+        const currentFps = frameCount;
+        setFps(currentFps);
+        
+        if (currentFps < 35) {
+          lowFpsStrikes++;
+          // If FPS is bad for 3 consecutive seconds, trigger low power mode
+          if (lowFpsStrikes > 3) {
+             setIsLowPower(true);
+             console.warn("GG_OPTIMIZER: High latency detected. Switching to Low Power Mode.");
+          }
+        } else {
+          lowFpsStrikes = 0;
+        }
+        
+        frameCount = 0;
+        lastTime = now;
+      }
+      rafId = requestAnimationFrame(monitorFps);
+    };
+
+    rafId = requestAnimationFrame(monitorFps);
+
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  // --- PARTICLE SYSTEM ---
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
-
-    // Detect mobile for performance optimization
-    const isMobile = window.innerWidth < 768;
-
-    // Mouse state tracking for parallax
-    let targetMouseX = 0;
-    let targetMouseY = 0;
-    let currentMouseX = 0;
-    let currentMouseY = 0;
-
-    const particles: { 
-      x: number; 
-      y: number; 
-      vx: number; 
-      vy: number; 
-      size: number;
-      depth: number; // For parallax effect
-    }[] = [];
     
-    // Reduced particle count for mobile
-    const particleCount = isMobile ? 20 : 50;
+    // Reduce particle count based on performance mode
+    const particleCount = isLowPower ? 15 : isMobile ? 30 : 60; 
+    
+    const particles = Array.from({ length: particleCount }).map(() => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      size: Math.random() * 2 + 0.5,
+      color: ['#00D9FF', '#9D00FF', '#FF006E'][Math.floor(Math.random() * 3)],
+      depth: Math.random() * 0.5 + 0.5,
+    }));
 
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 2 + 0.5,
-        depth: Math.random() * 0.5 + 0.2, // Depth factor between 0.2 and 0.7
-      });
-    }
-
-    let animationFrameId: number;
+    let animationId: number;
+    let mouseX = 0, mouseY = 0;
+    let targetX = 0, targetY = 0;
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
       
-      // Smooth interpolation of mouse movement
       if (!isMobile) {
-        currentMouseX += (targetMouseX - currentMouseX) * 0.05;
-        currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+        mouseX += (targetX - mouseX) * 0.05;
+        mouseY += (targetY - mouseY) * 0.05;
       }
 
       particles.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
+        
+        // Wrap
+        if (p.x < 0) p.x = width;
+        else if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        else if (p.y > height) p.y = 0;
 
-        // Wrap around boundaries
-        if (p.x < -50) p.x = width + 50;
-        if (p.x > width + 50) p.x = -50;
-        if (p.y < -50) p.y = height + 50;
-        if (p.y > height + 50) p.y = -50;
+        const px = p.x + (mouseX * p.depth * 40);
+        const py = p.y + (mouseY * p.depth * 40);
 
-        // Apply parallax offset based on depth
-        // We calculate draw position but keep logical position (p.x, p.y) independent of mouse
-        const parallaxX = p.x + (currentMouseX * p.depth * 50);
-        const parallaxY = p.y + (currentMouseY * p.depth * 50);
-
-        ctx.globalAlpha = 0.3 + (p.depth * 0.5); // Depth affects opacity
-        ctx.fillStyle = '#00D9FF';
+        ctx.globalAlpha = isLowPower ? 0.4 : 0.8;
+        ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(parallaxX, parallaxY, p.size, 0, Math.PI * 2);
-        
-        // Subtle glow effect
-        ctx.shadowBlur = 10 + (p.depth * 5); // Glow varies by depth
-        ctx.shadowColor = '#00D9FF';
-        
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
         ctx.fill();
-      });
 
-      animationFrameId = requestAnimationFrame(render);
+        // Draw connections only in high perf mode
+        if (!isLowPower && !isMobile) {
+          particles.forEach(p2 => {
+             const dx = px - (p2.x + (mouseX * p2.depth * 40));
+             const dy = py - (p2.y + (mouseY * p2.depth * 40));
+             const dist = Math.sqrt(dx*dx + dy*dy);
+             if (dist < 100) {
+               ctx.strokeStyle = `rgba(0, 217, 255, ${0.1 * (1 - dist/100)})`;
+               ctx.lineWidth = 0.5;
+               ctx.beginPath();
+               ctx.moveTo(px, py);
+               ctx.lineTo(p2.x + (mouseX * p2.depth * 40), p2.y + (mouseY * p2.depth * 40));
+               ctx.stroke();
+             }
+          });
+        }
+      });
+      animationId = requestAnimationFrame(render);
     };
 
     render();
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isMobile) return;
-      // Normalize coordinates (-1 to 1) relative to center
-      targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
-      targetMouseY = (e.clientY / window.innerHeight) * 2 - 1;
-      
-      // Invert for parallax feel (background moves opposite to mouse)
-      targetMouseX = -targetMouseX;
-      targetMouseY = -targetMouseY;
-    };
-
     const handleResize = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
+    };
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      targetX = (e.clientX / width) * 2 - 1;
+      targetY = (e.clientY / height) * 2 - 1;
     };
 
     window.addEventListener('resize', handleResize);
@@ -113,112 +191,175 @@ export const Hero: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [isLowPower, isMobile]);
 
   const headline = "GAME HARDER AT GGWELLPLAYED";
   const words = headline.split(" ");
-  const subheadingText = "Pune's Premier Gaming Destination | High-End PCs | PS5 | Tournaments";
 
   return (
-    <section className="relative min-h-[100dvh] w-full overflow-hidden flex flex-col items-center justify-center text-center px-4 md:px-6">
-      {/* Background Particles */}
-      <motion.div style={{ y }} className="absolute inset-0 z-0">
+    <section 
+      ref={containerRef}
+      className="relative min-h-[100svh] w-full overflow-hidden flex flex-col items-center justify-center text-center bg-gg-dark"
+    >
+      {/* LAYER 1: VIDEO GRID */}
+      <div 
+        className="absolute inset-0 z-0 grid grid-cols-1 md:grid-cols-3 pointer-events-none transition-all duration-1000"
+        style={{ opacity: isLowPower ? 0.1 : 0.2 }}
+      >
+        {VIDEOS.map((video) => (
+          <div key={video.id} className="relative w-full h-full overflow-hidden border-r border-gg-dark/50 group">
+            {isLowPower ? (
+              <img 
+                src={video.poster} 
+                alt={video.alt}
+                className="absolute inset-0 w-full h-full object-cover opacity-30 grayscale"
+              />
+            ) : (
+              <motion.div
+                className="w-full h-full"
+                animate={{ scale: [1, 1.15] }}
+                transition={{ duration: 40, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+              >
+                <video
+                  className="absolute inset-0 w-full h-full object-cover filter brightness-110 contrast-110 blur-[2px]"
+                  poster={video.poster}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  ref={el => {
+                    if (el) isInView ? el.play().catch(() => {}) : el.pause();
+                  }}
+                >
+                   {isInView && <source src={video.src} type="video/mp4" />}
+                </video>
+              </motion.div>
+            )}
+            
+            {/* Tint Overlay */}
+            <div className="absolute inset-0 bg-gg-dark/40 mix-blend-multiply" />
+            
+            {/* Game Label (Desktop Only) */}
+            <div className="hidden md:block absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 z-20">
+               <div className="px-4 py-2 bg-black/60 backdrop-blur-md border border-gg-cyan/30 rounded text-gg-cyan font-bold tracking-[0.2em] text-sm whitespace-nowrap shadow-[0_0_15px_rgba(0,217,255,0.2)]">
+                  {video.label}
+               </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* LAYER 2: SCANLINES (Animated) */}
+      <div className="absolute inset-0 z-[2] pointer-events-none opacity-[0.03] bg-[repeating-linear-gradient(0deg,black,black_1px,transparent_1px,transparent_3px)] bg-[length:100%_4px] animate-[scan_8s_linear_infinite]" />
+
+      {/* LAYER 3: GRADIENTS */}
+      <div className="absolute inset-0 z-[5] bg-gradient-to-b from-gg-dark/90 via-transparent to-gg-dark/90" />
+      <div className="absolute inset-0 z-[5] bg-[radial-gradient(circle_at_center,transparent_20%,rgba(5,7,20,0.85)_100%)]" />
+
+      {/* LAYER 4: PARTICLES */}
+      <motion.div style={{ y: yText }} className="absolute inset-0 z-[10] pointer-events-none">
          <canvas ref={canvasRef} className="absolute inset-0" />
-         <div className="absolute inset-0 bg-gradient-to-b from-gg-dark/60 via-transparent to-gg-dark pointer-events-none" />
       </motion.div>
 
-      {/* Improved Soft Scan Light Effect */}
-      <motion.div
-        initial={{ top: "-30%", opacity: 0 }}
-        animate={{ top: "130%", opacity: [0, 0.5, 0] }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "linear",
-          repeatDelay: 1
-        }}
-        className="absolute left-0 right-0 h-[40vh] bg-gradient-to-b from-transparent via-gg-cyan/10 to-transparent z-[5] pointer-events-none blur-xl mix-blend-overlay"
-      />
+      {/* LAYER 5: CONTENT */}
+      <div className="relative z-[20] flex flex-col items-center max-w-7xl mx-auto space-y-6 md:space-y-8 w-full px-4">
+        
+        {/* Performance Debugger (Optional visual for "tech" feel) */}
+        {isLowPower && (
+          <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 rounded bg-red-900/20 border border-red-500/30 text-red-400 text-xs font-mono animate-pulse">
+            <Cpu size={12} />
+            <span>LOW POWER MODE</span>
+          </div>
+        )}
 
-      <div className="relative z-10 flex flex-col items-center max-w-6xl mx-auto space-y-6 md:space-y-8 w-full">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-2 md:mb-4 relative inline-block group cursor-default"
-          data-hover
+          className="mb-2 md:mb-6 relative inline-block group cursor-default max-w-full"
         >
-          <h2 className="relative z-10 text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-gg-cyan to-gg-purple tracking-tighter">
+          {/* Main Logo Text */}
+          <h2 className="relative z-10 text-5xl sm:text-6xl md:text-8xl font-heading font-black text-transparent bg-clip-text bg-gradient-to-r from-gg-cyan via-white to-gg-purple tracking-tighter filter drop-shadow-[0_0_20px_rgba(0,217,255,0.4)]">
             GG WELLPLAYED
           </h2>
+          
           {/* Glitch Layers */}
-          <h2 className="absolute top-0 left-0 -z-10 text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-heading font-bold text-gg-cyan opacity-70 animate-glitch-1 tracking-tighter mix-blend-screen translate-x-[2px]" aria-hidden="true">
+          <h2 className="absolute top-0 left-0 -z-10 text-5xl sm:text-6xl md:text-8xl font-heading font-black text-gg-cyan opacity-70 animate-glitch-1 tracking-tighter mix-blend-screen translate-x-[2px]" aria-hidden="true">
             GG WELLPLAYED
           </h2>
-          <h2 className="absolute top-0 left-0 -z-10 text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-heading font-bold text-gg-pink opacity-70 animate-glitch-2 tracking-tighter mix-blend-screen -translate-x-[2px]" aria-hidden="true">
+          <h2 className="absolute top-0 left-0 -z-10 text-5xl sm:text-6xl md:text-8xl font-heading font-black text-gg-pink opacity-70 animate-glitch-2 tracking-tighter mix-blend-screen -translate-x-[2px]" aria-hidden="true">
             GG WELLPLAYED
           </h2>
         </motion.div>
 
-        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-heading font-bold text-white flex flex-wrap justify-center gap-x-3 md:gap-x-4 gap-y-2 drop-shadow-[0_0_10px_#00D9FF]">
+        {/* Animated Headline */}
+        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-heading font-bold text-white flex flex-wrap justify-center gap-x-2 md:gap-x-4 gap-y-1 md:gap-y-2 drop-shadow-xl px-2 max-w-5xl leading-tight">
           {words.map((word, i) => (
             <motion.span
               key={i}
-              initial={{ opacity: 0, filter: "blur(10px)" }}
-              animate={{ opacity: 1, filter: "blur(0px)" }}
-              transition={{ delay: 0.5 + (i * 0.15), duration: 0.6 }}
-              className="cursor-default"
+              initial={{ opacity: 0, filter: "blur(12px)", y: 20 }}
+              animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+              transition={{ delay: 0.2 + (i * 0.1), duration: 0.6 }}
+              className="cursor-default hover:text-gg-cyan transition-colors duration-300"
             >
               {word}
             </motion.span>
           ))}
         </h1>
 
+        {/* Tagline */}
         <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.8 }}
-          className="h-8 md:h-12 flex justify-center w-full overflow-hidden"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
+          className="w-full flex justify-center px-4"
         >
-           <motion.p
-            initial={{ width: 0 }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 3, delay: 2, ease: "linear" }}
-            className="text-gg-text-sec text-xs sm:text-sm md:text-xl font-mono text-gray-300 border-r-2 border-gg-cyan whitespace-nowrap overflow-hidden max-w-fit px-1"
-          >
-            {subheadingText}
-          </motion.p>
+           <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 text-gg-text-sec text-xs sm:text-sm md:text-lg font-mono tracking-wide bg-gg-dark/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/5 shadow-2xl">
+             <span className="text-white font-bold">Pune's Premier Gaming Destination</span>
+             <span className="hidden md:inline text-gray-600">|</span>
+             <div className="flex gap-3">
+               <span className="text-gg-cyan">High-End PCs</span>
+               <span className="text-gray-600">/</span>
+               <span className="text-gg-purple">PS5</span>
+               <span className="text-gray-600">/</span>
+               <span className="text-gg-pink">Tournaments</span>
+             </div>
+           </div>
         </motion.div>
 
+        {/* CTA Button - Reverted to Previous Version */}
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.5 }}
-          whileHover={{ scale: 1.05, boxShadow: "0 0 20px #00D9FF" }}
+          transition={{ delay: 1.8 }}
+          whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0,217,255,0.4)" }}
           whileTap={{ scale: 0.95 }}
-          className="px-6 py-3 md:px-8 md:py-4 border-2 border-gg-cyan text-gg-cyan font-bold text-base md:text-lg rounded-sm hover:bg-gg-cyan hover:text-gg-dark transition-colors duration-300 animate-pulse-slow relative group overflow-hidden active:bg-gg-cyan/20"
+          className="group relative px-8 py-4 md:px-10 md:py-5 bg-transparent overflow-hidden rounded-sm border-2 border-gg-cyan mt-6 md:mt-8 touch-manipulation"
           onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}
-          data-hover
+          aria-label="Book your gaming session now"
         >
-          <span className="relative z-10">BOOK YOUR SESSION NOW</span>
-          <div className="absolute inset-0 bg-gg-cyan opacity-0 group-hover:opacity-10 transition-opacity" />
+          <div className="absolute inset-0 w-0 bg-gg-cyan transition-all duration-[250ms] ease-out group-hover:w-full opacity-100" />
+          <span className="relative text-gg-cyan group-hover:text-gg-dark font-heading font-black text-lg md:text-xl tracking-widest uppercase transition-colors duration-200">
+            Book Your Session
+          </span>
         </motion.button>
       </div>
 
+      {/* Scroll Indicator */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 3 }}
-        className="absolute bottom-6 md:bottom-10 left-1/2 transform -translate-x-1/2 text-gg-cyan flex flex-col items-center gap-2"
+        transition={{ delay: 2.5 }}
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 z-[20] pointer-events-none mix-blend-screen"
       >
-        <span className="text-[10px] md:text-xs font-mono tracking-widest opacity-80">SCROLL TO EXPLORE</span>
+        <span className="text-[10px] font-mono tracking-[0.3em] text-gg-cyan opacity-80 uppercase">Scroll to Explore</span>
         <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
+          animate={{ y: [0, 8, 0], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <ArrowDown size={20} className="md:w-6 md:h-6" />
+          <ArrowDown size={24} className="text-white drop-shadow-[0_0_10px_#00D9FF]" />
         </motion.div>
       </motion.div>
     </section>

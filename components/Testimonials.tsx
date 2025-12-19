@@ -63,11 +63,12 @@ export const Testimonials: React.FC = () => {
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
               onDragEnd={handleDragEnd}
+              // CRITICAL FIX: touch-pan-y allows vertical scrolling of the page while swiping horizontally
               className="bg-gg-medium p-6 md:p-12 rounded-2xl border border-gg-purple/30 shadow-[0_0_30px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing touch-pan-y"
             >
               <div className="flex gap-1 mb-6 text-gg-lime justify-center md:justify-start">
                 {[...Array(testimonials[current].rating)].map((_, i) => (
-                  <Star key={i} fill="currentColor" size={20} />
+                  <Star key={i} fill="currentColor" size={20} aria-hidden="true" />
                 ))}
               </div>
               
@@ -91,11 +92,19 @@ export const Testimonials: React.FC = () => {
             </motion.div>
           </AnimatePresence>
 
-          <button onClick={prev} className="absolute top-1/2 -left-2 md:-left-16 transform -translate-y-1/2 p-3 bg-gg-medium rounded-full border border-gray-700 hover:border-gg-cyan hover:text-gg-cyan transition-all hidden md:block">
-            <ChevronLeft />
+          <button 
+            onClick={prev} 
+            aria-label="Previous testimonial"
+            className="absolute top-1/2 -left-2 md:-left-16 transform -translate-y-1/2 p-3 bg-gg-medium rounded-full border border-gray-700 hover:border-gg-cyan hover:text-gg-cyan transition-all hidden md:block focus:outline-none focus:ring-2 focus:ring-gg-cyan"
+          >
+            <ChevronLeft aria-hidden="true" />
           </button>
-          <button onClick={next} className="absolute top-1/2 -right-2 md:-right-16 transform -translate-y-1/2 p-3 bg-gg-medium rounded-full border border-gray-700 hover:border-gg-cyan hover:text-gg-cyan transition-all hidden md:block">
-            <ChevronRight />
+          <button 
+            onClick={next} 
+            aria-label="Next testimonial"
+            className="absolute top-1/2 -right-2 md:-right-16 transform -translate-y-1/2 p-3 bg-gg-medium rounded-full border border-gray-700 hover:border-gg-cyan hover:text-gg-cyan transition-all hidden md:block focus:outline-none focus:ring-2 focus:ring-gg-cyan"
+          >
+            <ChevronRight aria-hidden="true" />
           </button>
           
           {/* Mobile Dots */}
@@ -104,6 +113,7 @@ export const Testimonials: React.FC = () => {
                <div 
                   key={i} 
                   className={`w-2 h-2 rounded-full transition-all ${i === current ? 'bg-gg-cyan w-6' : 'bg-gray-600'}`} 
+                  role="presentation"
                />
              ))}
           </div>
