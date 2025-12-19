@@ -134,7 +134,9 @@ export const Hero: React.FC = () => {
         mouseY += (targetY - mouseY) * 0.05;
       }
 
-      particles.forEach(p => {
+      // Pre-calculate visual positions and update physics
+      const visualParticles = particles.map(p => {
+        // Update physics
         p.x += p.vx;
         p.y += p.vy;
         
