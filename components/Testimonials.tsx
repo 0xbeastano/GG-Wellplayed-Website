@@ -63,6 +63,7 @@ export const Testimonials: React.FC = () => {
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
               onDragEnd={handleDragEnd}
+              // CRITICAL FIX: touch-pan-y allows vertical scrolling of the page while swiping horizontally
               className="bg-gg-medium p-6 md:p-12 rounded-2xl border border-gg-purple/30 shadow-[0_0_30px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing touch-pan-y"
             >
               <div className="flex gap-1 mb-6 text-gg-lime justify-center md:justify-start">

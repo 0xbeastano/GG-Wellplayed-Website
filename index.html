@@ -89,6 +89,27 @@
         margin: 0;
         padding: 0;
         overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent; /* Remove blue highlight on tap */
+        touch-action: manipulation; /* Eliminate 300ms delay */
+      }
+
+      /* Mobile Performance Optimizations */
+      input, textarea, select, button, a {
+        touch-action: manipulation;
+      }
+
+      /* Force Hardware Acceleration for smoother animations */
+      .gpu-accelerated {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+      }
+      
+      /* Improve text rendering */
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
       }
     </style>
 

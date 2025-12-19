@@ -30,3 +30,15 @@ export interface Event {
   date?: string;
   cta: string;
 }
+
+export interface Booking {
+  id: string;
+  customerName: string;
+  phoneNumber: string;
+  date: string;
+  platform: string;
+  duration: string;
+  price: number;
+  timestamp: number;
+  status: 'PENDING' | 'CONFIRMED';
+}

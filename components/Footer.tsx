@@ -1,7 +1,12 @@
 import React from 'react';
-import { Twitter, Instagram, Youtube, Twitch, Disc } from 'lucide-react';
+import { Twitter, Instagram, Youtube, Twitch, Disc, Lock } from 'lucide-react';
 
 export const Footer: React.FC = () => {
+  const triggerDashboard = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.dispatchEvent(new Event('toggleAdminDashboard'));
+  };
+
   return (
     <footer className="bg-gg-medium pt-20 pb-10 border-t border-gray-800">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -59,9 +64,16 @@ export const Footer: React.FC = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
           <p>© 2025 GGwellplayed Gaming Cafe. All rights reserved.</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
+          <div className="flex items-center space-x-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-white">Privacy Policy</a>
             <a href="#" className="hover:text-white">Terms of Service</a>
+            {/* Staff Access Button */}
+            <button 
+              onClick={triggerDashboard}
+              className="flex items-center hover:text-gg-cyan transition-colors opacity-50 hover:opacity-100"
+            >
+              <Lock size={12} className="mr-1" /> Staff
+            </button>
           </div>
         </div>
       </div>
