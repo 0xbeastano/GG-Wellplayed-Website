@@ -99,8 +99,8 @@ export const Hero: React.FC = () => {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
         size: Math.random() * 2 + 0.5,
         color: colors[Math.floor(Math.random() * colors.length)],
         depth: Math.random() * 0.5 + 0.5,
@@ -122,7 +122,9 @@ export const Hero: React.FC = () => {
         currentMouseY += (targetMouseY - currentMouseY) * 0.05;
       }
 
-      particles.forEach(p => {
+      // Pre-calculate visual positions and update physics
+      const visualParticles = particles.map(p => {
+        // Update physics
         p.x += p.vx;
         p.y += p.vy;
 
