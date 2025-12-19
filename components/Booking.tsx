@@ -110,6 +110,7 @@ export const Booking: React.FC = () => {
     setStatus('PROCESSING');
 
     // Artificial delay for better UX (showing processing state)
+    // Decreased delay to 1s to reduce chance of popup blocking
     setTimeout(() => {
       setStatus('REDIRECTING');
       
@@ -131,13 +132,15 @@ export const Booking: React.FC = () => {
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMessage}`;
 
-      // Short delay before opening to show "Redirecting" state
+      // Use a short delay before opening to show "Redirecting" state
+      // window.open is used, but if it fails, fallback to location.href could be an option.
+      // Keeping it simple for now.
       setTimeout(() => {
         window.open(whatsappUrl, '_blank');
         setStatus('IDLE');
-      }, 1000);
+      }, 500);
 
-    }, 1500);
+    }, 1000);
   };
 
   // Helper to get today's date string for min attribute
@@ -279,8 +282,10 @@ export const Booking: React.FC = () => {
                <div className="flex-grow flex flex-col justify-center bg-gg-medium rounded-2xl p-6 md:p-10 border border-gray-800 relative overflow-hidden group">
                   
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
-                  <div className="absolute -top-24 -right-24 w-64 h-64 bg-gg-cyan/20 rounded-full blur-3xl group-hover:bg-gg-cyan/30 transition-colors duration-500" />
-                  <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-gg-purple/20 rounded-full blur-3xl group-hover:bg-gg-purple/30 transition-colors duration-500" />
+                  
+                  {/* Optimized Blobs using opacity transition instead of color transition for GPU acceleration */}
+                  <div className="absolute -top-24 -right-24 w-64 h-64 bg-gg-cyan/30 rounded-full blur-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-gg-purple/30 rounded-full blur-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
                   <div className="relative z-10">
                     <h3 className="text-gray-400 font-mono mb-2 text-base md:text-lg tracking-widest uppercase">Estimated Total</h3>
@@ -309,12 +314,13 @@ export const Booking: React.FC = () => {
                         </div>
                     </div>
                     
+                    {/* Confirm Button with Optimized Hover Effect (No box-shadow animation) */}
                     <motion.button 
                       onClick={handleConfirmBooking}
                       disabled={status !== 'IDLE'}
-                      whileHover={status === 'IDLE' ? { scale: 1.02, boxShadow: "0 0 30px rgba(0, 217, 255, 0.4)" } : {}}
+                      whileHover={status === 'IDLE' ? { scale: 1.02 } : {}}
                       whileTap={status === 'IDLE' ? { scale: 0.98 } : {}}
-                      className={`w-full py-4 md:py-5 font-bold text-lg md:text-xl rounded-xl shadow-xl transition-all relative overflow-hidden flex items-center justify-center ${
+                      className={`w-full py-4 md:py-5 font-bold text-lg md:text-xl rounded-xl shadow-xl transition-all relative overflow-hidden flex items-center justify-center group/btn ${
                           status === 'IDLE' 
                             ? 'bg-gradient-to-r from-gg-cyan to-gg-purple text-white' 
                             : status === 'REDIRECTING' 
@@ -322,6 +328,11 @@ export const Booking: React.FC = () => {
                                 : 'bg-gray-700 text-gray-400 cursor-not-allowed'
                       }`}
                     >
+                        {/* Independent Glow Layer for opacity transition (GPU) */}
+                        {status === 'IDLE' && (
+                          <div className="absolute inset-0 bg-white/0 shadow-[0_0_30px_rgba(0,217,255,0.4)] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+                        )}
+
                         <AnimatePresence mode="wait">
                             {status === 'IDLE' && (
                                 <motion.span 
@@ -329,7 +340,7 @@ export const Booking: React.FC = () => {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="flex items-center tracking-wider"
+                                    className="flex items-center tracking-wider relative z-10"
                                 >
                                     CONFIRM BOOKING
                                 </motion.span>
@@ -340,7 +351,7 @@ export const Booking: React.FC = () => {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="flex items-center"
+                                    className="flex items-center relative z-10"
                                 >
                                     <Loader2 className="animate-spin mr-3 w-5 h-5 md:w-6 md:h-6" /> PROCESSING...
                                 </motion.span>
@@ -351,7 +362,7 @@ export const Booking: React.FC = () => {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="flex items-center"
+                                    className="flex items-center relative z-10"
                                 >
                                     <CheckCircle className="mr-3 w-5 h-5 md:w-6 md:h-6" /> REDIRECTING...
                                 </motion.span>
