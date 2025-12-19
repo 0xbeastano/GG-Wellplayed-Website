@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, useMotionTemplate } from 'framer-motion';
-import { ArrowDown, Crosshair, Gamepad2, Trophy, Zap, MousePointer2, Cpu, Wifi } from 'lucide-react';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from 'framer-motion';
+import { ArrowDown, Crosshair, Gamepad2, Car, Trophy, Users, Zap, MousePointer2, Monitor, Disc } from 'lucide-react';
 
 interface VideoConfig {
   id: string;
@@ -54,6 +54,9 @@ export const Hero: React.FC = () => {
   // Typewriter Effect State
   const [titleVisible, setTitleVisible] = useState(false);
 
+  // Social Proof Counter
+  const [onlinePlayers, setOnlinePlayers] = useState(8);
+
   // --- MOUSE TRACKING ---
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -68,6 +71,11 @@ export const Hero: React.FC = () => {
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
     setTitleVisible(true);
+
+    // Fake live counter update
+    const interval = setInterval(() => {
+      setOnlinePlayers(prev => Math.min(Math.max(prev + Math.floor(Math.random() * 3) - 1, 8), 16));
+    }, 4000);
 
     // FPS Monitor
     let frameCount = 0;
@@ -86,17 +94,16 @@ export const Hero: React.FC = () => {
 
     return () => {
       cancelAnimationFrame(raf);
+      clearInterval(interval);
     };
-  }, [isLowPower, isMobile]);
+  }, []);
 
-  // COPYWRITING UPDATE: More aggressive, hardware-focused
-  const headline = "DEFY LIMITS. PLAY GODLIKE.";
-  
+  const headline = "GAME HARDER AT GGWELLPLAYED";
   const taglineItems = [
-    { text: "RTX 4090 OC EDITION", color: "text-gg-cyan", icon: Cpu },
-    { text: "360Hz DYAC+ PANELS", color: "text-gg-lime", icon: Zap },
-    { text: "PS5 PRO IMMERSION", color: "text-gg-purple", icon: Gamepad2 },
-    { text: "GIGABIT FIBER LAN", color: "text-gg-pink", icon: Wifi },
+    { text: "High-End PCs", color: "text-gg-cyan" },
+    { text: "PS5 Consoles", color: "text-gg-purple" },
+    { text: "240Hz Monitors", color: "text-gg-lime" },
+    { text: "Esports Tournaments", color: "text-gg-pink" },
   ];
 
   // Floating Icons Configuration
@@ -195,37 +202,56 @@ export const Hero: React.FC = () => {
         className="relative z-[20] flex flex-col items-center w-full max-w-7xl px-4 text-center"
       >
         
-        {/* 1. LOGO WITH GLITCH */}
-        <div className="relative mb-6 md:mb-10 group cursor-default mt-16 md:mt-0">
+        {/* 1. SOCIAL PROOF PILL */}
+        <motion.div 
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5, type: "spring" }}
+          className="mb-8 md:mb-12 flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-5 py-2 shadow-lg"
+        >
+          <div className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+          </div>
+          <span className="text-gray-300 font-mono text-xs md:text-sm tracking-wide">
+            <strong className="text-white">{onlinePlayers} Players</strong> Online Now
+          </span>
+          <div className="h-4 w-px bg-white/10 mx-1" />
+          <div className="flex text-yellow-400 gap-0.5">
+            {[1,2,3,4,5].map(s => <span key={s} className="text-[10px]">★</span>)}
+          </div>
+          <span className="text-[10px] text-gray-400 font-bold hidden sm:inline">4.9/5 RATING</span>
+        </motion.div>
+
+        {/* 2. LOGO WITH GLITCH */}
+        <div className="relative mb-4 md:mb-8 group cursor-default">
           <motion.h2 
              initial={{ scale: 0.8, opacity: 0 }}
              animate={{ scale: 1, opacity: 1 }}
              transition={{ duration: 0.8, ease: "easeOut" }}
-             className="relative z-10 text-6xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-gray-500 tracking-tighter filter drop-shadow-[0_0_10px_rgba(0,217,255,0.2)] leading-[0.85]"
+             className="relative z-10 text-5xl sm:text-7xl md:text-9xl font-heading font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-gg-cyan to-white tracking-tighter filter drop-shadow-[0_0_25px_rgba(0,217,255,0.3)]"
           >
             GG WELLPLAYED
           </motion.h2>
-          
-          {/* Glitch Duplicates - Adjusted for new size */}
-          <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-70 animate-glitch-1 mix-blend-screen text-6xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-gg-pink left-[3px] pointer-events-none leading-[0.85]">
+          {/* Glitch Duplicates */}
+          <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-70 animate-glitch-1 mix-blend-screen text-5xl sm:text-7xl md:text-9xl font-heading font-black text-gg-pink left-[2px] pointer-events-none">
             GG WELLPLAYED
           </div>
-          <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-70 animate-glitch-2 mix-blend-screen text-6xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-gg-lime -left-[3px] pointer-events-none leading-[0.85]">
+          <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-70 animate-glitch-2 mix-blend-screen text-5xl sm:text-7xl md:text-9xl font-heading font-black text-gg-lime -left-[2px] pointer-events-none">
             GG WELLPLAYED
           </div>
-          <div className="absolute -inset-8 bg-gg-cyan/10 blur-[100px] rounded-full opacity-30 animate-pulse-slow pointer-events-none" />
+          <div className="absolute -inset-8 bg-gg-cyan/20 blur-[100px] rounded-full opacity-20 animate-pulse-slow pointer-events-none" />
         </div>
 
-        {/* 2. TYPEWRITER TITLE - Updated to Monospace for "System" look */}
-        <h1 className="h-12 md:h-20 flex items-center justify-center text-lg sm:text-2xl md:text-5xl font-mono font-bold text-white tracking-widest drop-shadow-2xl uppercase">
-          <span className="text-gg-cyan mr-2 md:mr-4">{">"}</span>
+        {/* 3. TYPEWRITER TITLE */}
+        <h1 className="h-16 md:h-24 flex items-center justify-center text-xl sm:text-3xl md:text-6xl font-heading font-bold text-white tracking-tight drop-shadow-2xl">
           {headline.split("").map((char, index) => (
             <motion.span
               key={index}
               initial={{ opacity: 0, display: "none" }}
               animate={{ opacity: 1, display: "inline" }}
               transition={{ delay: 0.8 + (index * 0.04) }}
-              className={index < 4 || index > 12 ? "text-white" : "text-gg-cyan"} 
+              className={index > 14 ? "text-gg-cyan" : ""} // Color 'GGWELLPLAYED' part
             >
               {char === " " ? "\u00A0" : char}
             </motion.span>
@@ -234,48 +260,60 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 0.8, repeat: Infinity }}
-            className="ml-2 w-2 md:w-3 h-4 md:h-8 bg-gg-cyan inline-block align-middle"
+            className="ml-1 w-2 md:w-4 h-6 md:h-12 bg-gg-cyan inline-block align-middle"
           />
         </h1>
 
-        {/* 3. TAGLINE - Tech Specs with Icons */}
+        {/* 4. TAGLINE (Color Coded & Bulleted) */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2.2, duration: 0.8 }}
-          className="mt-8 md:mt-10 flex flex-wrap justify-center items-center gap-x-4 md:gap-x-8 gap-y-4 max-w-5xl"
+          className="mt-6 md:mt-8 flex flex-wrap justify-center gap-x-4 md:gap-x-6 gap-y-2 max-w-4xl"
         >
           {taglineItems.map((item, idx) => (
-            <div key={idx} className="flex items-center group">
-              {idx > 0 && <span className="text-gray-700 mr-4 md:mr-8 text-lg font-thin">/</span>}
-              <item.icon size={16} className={`mr-2 ${item.color} opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all`} />
-              <span className={`font-mono text-xs sm:text-sm md:text-base font-bold tracking-widest ${item.color} drop-shadow-md border-b border-transparent group-hover:border-current transition-all pb-0.5`}>
+            <div key={idx} className="flex items-center">
+              {idx > 0 && <span className="text-gray-600 mr-4 md:mr-6 text-xs">•</span>}
+              <span className={`font-mono text-xs sm:text-sm md:text-lg font-bold tracking-wide ${item.color} drop-shadow-md`}>
                 {item.text}
               </span>
             </div>
           ))}
         </motion.div>
 
-        {/* 4. CTA BUTTON */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.6 }}
-          whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0,217,255,0.3)" }}
-          whileTap={{ scale: 0.95 }}
-          className="group relative px-10 py-5 md:px-14 md:py-6 bg-transparent overflow-hidden rounded-sm border-2 border-gg-cyan mt-12 md:mt-20 touch-manipulation cursor-pointer"
-          onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}
-          aria-label="Book your gaming session now"
+        {/* 5. MEGA CTA BUTTON */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 2.6, type: "spring" }}
+          className="mt-12 md:mt-16 relative group"
         >
-          {/* Scanline effect inside button */}
-          <div className="absolute inset-0 bg-[url('https://media.giphy.com/media/xT9IgN8YKQnCg8T5V6/giphy.gif')] opacity-10 mix-blend-overlay pointer-events-none" />
-          
-          <div className="absolute inset-0 w-0 bg-gg-cyan transition-all duration-[250ms] ease-out group-hover:w-full opacity-100" />
-          
-          <span className="relative z-10 text-gg-cyan group-hover:text-gg-dark font-heading font-black text-xl md:text-2xl tracking-[0.2em] uppercase transition-colors duration-200 italic flex items-center gap-3">
-             Start Game
-          </span>
-        </motion.button>
+          <div className="absolute -inset-1 bg-gradient-to-r from-gg-cyan via-gg-purple to-gg-pink rounded-xl opacity-75 blur-lg group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
+          <button
+            onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}
+            className="relative w-full sm:w-auto min-w-[300px] px-8 py-5 md:px-12 md:py-6 bg-gg-dark rounded-xl leading-none flex flex-col items-center justify-center overflow-hidden transform transition-transform duration-200 active:scale-95 border border-white/10"
+          >
+             {/* Shine Sweep */}
+             <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[30deg] animate-[shimmer_3s_infinite]" />
+             
+             <div className="relative z-10 flex items-center gap-3">
+               <span className="font-heading font-black text-xl md:text-3xl text-white tracking-widest uppercase group-hover:text-gg-cyan transition-colors">
+                 BOOK NOW
+               </span>
+               <span className="bg-red-600 text-white text-[10px] md:text-xs font-bold px-2 py-0.5 rounded animate-pulse">
+                 LIMITED SLOTS
+               </span>
+             </div>
+             
+             <div className="relative z-10 mt-2 flex items-center gap-4 text-[10px] md:text-xs font-mono text-gray-400">
+                <span className="flex items-center gap-1 text-gg-lime">
+                  <Monitor size={10} /> 5 Rigs Available
+                </span>
+                <span className="w-1 h-1 bg-gray-600 rounded-full" />
+                <span>Walk-ins Welcome</span>
+             </div>
+          </button>
+        </motion.div>
 
       </motion.div>
 
@@ -318,7 +356,7 @@ export const Hero: React.FC = () => {
         >
           <MousePointer2 size={24} className="text-gg-cyan mb-2" />
           <span className="text-[10px] font-heading font-bold tracking-[0.2em] text-white uppercase bg-black/50 px-3 py-1 rounded-full border border-white/10 backdrop-blur">
-            Enter The Arena
+            Explore The Arena
           </span>
           <ArrowDown size={16} className="text-gg-cyan mt-1" />
         </motion.div>
