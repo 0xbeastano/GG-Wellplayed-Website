@@ -133,9 +133,9 @@ const App: React.FC = () => {
 
       <Footer />
 
-      {/* Scroll Progress Bar - Moved to bottom of DOM and increased Z-index to ensure it sits on top */}
+      {/* Scroll Progress Bar - Refined for best theme integration */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-gg-cyan to-gg-pink origin-left z-[9999]"
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-gg-cyan via-gg-purple to-gg-pink origin-left z-[9999] shadow-[0_0_20px_rgba(0,217,255,0.6)]"
         style={{ scaleX }}
       />
     </div>

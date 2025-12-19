@@ -88,7 +88,10 @@ export const Booking: React.FC = () => {
       newErrors.date = "Please select a booking date";
       isValid = false;
     } else {
-      const selectedDate = new Date(date);
+      // Safe date parsing to avoid timezone issues
+      const [year, month, day] = date.split('-').map(Number);
+      const selectedDate = new Date(year, month - 1, day);
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
@@ -110,11 +113,12 @@ export const Booking: React.FC = () => {
     setStatus('PROCESSING');
 
     // Artificial delay for better UX (showing processing state)
-    // Decreased delay to 1s to reduce chance of popup blocking
     setTimeout(() => {
       setStatus('REDIRECTING');
       
-      const dateObj = new Date(date);
+      // Safe date formatting
+      const [year, month, day] = date.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day);
       const formattedDate = dateObj.toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'long', 
@@ -133,8 +137,6 @@ export const Booking: React.FC = () => {
       const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMessage}`;
 
       // Use a short delay before opening to show "Redirecting" state
-      // window.open is used, but if it fails, fallback to location.href could be an option.
-      // Keeping it simple for now.
       setTimeout(() => {
         window.open(whatsappUrl, '_blank');
         setStatus('IDLE');
@@ -145,14 +147,22 @@ export const Booking: React.FC = () => {
 
   // Helper to get today's date string for min attribute
   const getTodayString = () => {
-    return new Date().toISOString().split('T')[0];
+    // Return formatted string relative to local time, not UTC
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
-  // Helper to get max date (e.g., 3 months from now to prevent year 60000)
+  // Helper to get max date (e.g., 3 months from now)
   const getMaxDateString = () => {
     const d = new Date();
     d.setMonth(d.getMonth() + 3);
-    return d.toISOString().split('T')[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   return (
