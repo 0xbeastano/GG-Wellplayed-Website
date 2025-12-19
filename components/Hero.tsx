@@ -15,6 +15,9 @@ export const Hero: React.FC = () => {
 
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
+    
+    // Cyberpunk Theme Colors
+    const colors = ['#00D9FF', '#9D00FF', '#FF006E'];
 
     // Detect mobile for performance optimization
     const isMobile = window.innerWidth < 768;
@@ -25,25 +28,29 @@ export const Hero: React.FC = () => {
     let currentMouseX = 0;
     let currentMouseY = 0;
 
-    const particles: { 
-      x: number; 
-      y: number; 
-      vx: number; 
-      vy: number; 
+    interface Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
       size: number;
+      color: string;
       depth: number; // For parallax effect
-    }[] = [];
+    }
+
+    const particles: Particle[] = [];
     
-    // Reduced particle count for mobile
-    const particleCount = isMobile ? 20 : 50;
+    // Particle count setup
+    const particleCount = isMobile ? 30 : 80;
 
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
         size: Math.random() * 2 + 0.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
         depth: Math.random() * 0.5 + 0.2, // Depth factor between 0.2 and 0.7
       });
     }
@@ -59,7 +66,9 @@ export const Hero: React.FC = () => {
         currentMouseY += (targetMouseY - currentMouseY) * 0.05;
       }
 
-      particles.forEach(p => {
+      // Pre-calculate visual positions and update physics
+      const visualParticles = particles.map(p => {
+        // Update physics
         p.x += p.vx;
         p.y += p.vy;
 
@@ -69,21 +78,51 @@ export const Hero: React.FC = () => {
         if (p.y < -50) p.y = height + 50;
         if (p.y > height + 50) p.y = -50;
 
-        // Apply parallax offset based on depth
-        // We calculate draw position but keep logical position (p.x, p.y) independent of mouse
-        const parallaxX = p.x + (currentMouseX * p.depth * 50);
-        const parallaxY = p.y + (currentMouseY * p.depth * 50);
+        // Calculate parallax visual position
+        const px = p.x + (currentMouseX * p.depth * 60);
+        const py = p.y + (currentMouseY * p.depth * 60);
 
-        ctx.globalAlpha = 0.3 + (p.depth * 0.5); // Depth affects opacity
-        ctx.fillStyle = '#00D9FF';
+        return { ...p, px, py };
+      });
+
+      // Draw connections (Constellation effect)
+      if (!isMobile) {
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < visualParticles.length; i++) {
+          const p1 = visualParticles[i];
+          for (let j = i + 1; j < visualParticles.length; j++) {
+            const p2 = visualParticles[j];
+            const dx = p1.px - p2.px;
+            const dy = p1.py - p2.py;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const connectionDist = 120;
+
+            if (dist < connectionDist) {
+               // Calculate opacity based on distance
+               const opacity = (1 - dist / connectionDist) * 0.15;
+               ctx.strokeStyle = `rgba(0, 217, 255, ${opacity})`;
+               ctx.beginPath();
+               ctx.moveTo(p1.px, p1.py);
+               ctx.lineTo(p2.px, p2.py);
+               ctx.stroke();
+            }
+          }
+        }
+      }
+
+      // Draw particles
+      visualParticles.forEach(p => {
+        ctx.globalAlpha = 0.6 + (p.depth * 0.4);
+        ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(parallaxX, parallaxY, p.size, 0, Math.PI * 2);
+        ctx.arc(p.px, p.py, p.size, 0, Math.PI * 2);
         
         // Subtle glow effect
-        ctx.shadowBlur = 10 + (p.depth * 5); // Glow varies by depth
-        ctx.shadowColor = '#00D9FF';
+        ctx.shadowBlur = 10 + (p.depth * 5); 
+        ctx.shadowColor = p.color;
         
         ctx.fill();
+        ctx.shadowBlur = 0; // Reset shadow for lines
       });
 
       animationFrameId = requestAnimationFrame(render);
@@ -123,7 +162,7 @@ export const Hero: React.FC = () => {
 
   return (
     <section className="relative min-h-[100dvh] w-full overflow-hidden flex flex-col items-center justify-center text-center px-4 md:px-6">
-      {/* Background Particles */}
+      {/* Background Particles Canvas */}
       <motion.div style={{ y }} className="absolute inset-0 z-0">
          <canvas ref={canvasRef} className="absolute inset-0" />
          <div className="absolute inset-0 bg-gradient-to-b from-gg-dark/60 via-transparent to-gg-dark pointer-events-none" />

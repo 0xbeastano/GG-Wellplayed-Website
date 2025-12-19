@@ -11,10 +11,13 @@ import { Booking } from './components/Booking';
 import { LocationContact } from './components/LocationContact';
 import { Footer } from './components/Footer';
 import { CustomCursor } from './components/CustomCursor';
+import { Dashboard } from './components/Dashboard';
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingPercent, setLoadingPercent] = useState(0);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -40,6 +43,13 @@ const App: React.FC = () => {
       clearTimeout(timer);
       clearInterval(interval);
     };
+  }, []);
+
+  // Listen for Admin Toggle Event (dispatched from Footer)
+  useEffect(() => {
+    const handleToggle = () => setIsDashboardOpen(true);
+    window.addEventListener('toggleAdminDashboard', handleToggle);
+    return () => window.removeEventListener('toggleAdminDashboard', handleToggle);
   }, []);
 
   if (loading) {
@@ -118,6 +128,7 @@ const App: React.FC = () => {
   return (
     <div className="bg-gg-dark text-white relative md:cursor-none overflow-x-hidden selection:bg-gg-cyan selection:text-gg-dark">
       <CustomCursor />
+      <Dashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
       
       <main className="relative z-10 w-full overflow-hidden">
         <Hero />
