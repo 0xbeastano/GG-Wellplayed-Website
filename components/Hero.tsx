@@ -1,346 +1,253 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, useMotionTemplate } from 'framer-motion';
-import { ArrowDown, Crosshair, Gamepad2, Trophy, Zap, MousePointer2, Cpu, Wifi, MapPin } from 'lucide-react';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { ArrowDown } from 'lucide-react';
 
 interface VideoConfig {
   id: string;
   src: string;
   poster: string;
-  label: string;
-  genre: string;
+  alt: string;
 }
 
-// Optimized video assets
+// Updated VIDEOS with "Gaming Screenplay" aesthetics (Cyberpunk, HUD, Speed)
 const VIDEOS: VideoConfig[] = [
   {
-    id: 'fps',
-    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", 
-    poster: "https://picsum.photos/id/1/800/1200", 
-    label: "CS:GO 2",
-    genre: "SHOOTER"
+    id: 'cyberpunk-gameplay',
+    src: "https://assets.mixkit.co/videos/preview/mixkit-purple-and-blue-lights-in-a-cyberpunk-city-4037-large.mp4", 
+    poster: "https://images.unsplash.com/photo-1533972724312-6eaf65e81882?q=80&w=2070", 
+    alt: "Cyberpunk City RPG Atmosphere"
   },
   {
-    id: 'moba',
-    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", 
-    poster: "https://picsum.photos/id/2/800/1200",
-    label: "DOTA 2",
-    genre: "STRATEGY"
+    id: 'fps-hud',
+    src: "https://assets.mixkit.co/videos/preview/mixkit-futuristic-interface-hud-scanning-data-3174-large.mp4",
+    poster: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070",
+    alt: "Tactical Shooter HUD"
   },
   {
-    id: 'action',
-    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
-    poster: "https://picsum.photos/id/3/800/1200",
-    label: "GTA V",
-    genre: "OPEN WORLD"
+    id: 'racing-speed',
+    src: "https://assets.mixkit.co/videos/preview/mixkit-abstract-tunnel-with-blue-lights-2572-large.mp4",
+    poster: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071",
+    alt: "High Speed Racing Gameplay"
   }
 ];
 
-export const Hero: React.FC = () => {
-  const containerRef = useRef<HTMLElement>(null);
-  
-  // Mouse Interaction for Spotlight
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  
-  // Parallax Text
-  const { scrollY } = useScroll();
-  const yText = useTransform(scrollY, [0, 500], [0, 250]);
-  const opacityText = useTransform(scrollY, [0, 300], [1, 0]);
+// --- NEW ANIMATION COMPONENT: CYPHER DECODE ---
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
 
-  // Performance State
-  const [isLowPower, setIsLowPower] = useState(false);
+interface DecodeCharProps {
+  char: string;
+  index: number;
+}
+
+const DecodeChar: React.FC<DecodeCharProps> = ({ char, index }) => {
+  const [displayText, setDisplayText] = useState(char);
+  const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
-  // Typewriter Effect State
-  const [titleVisible, setTitleVisible] = useState(false);
+  // Track animation state to prevent overlapping intervals
+  const intervalRef = useRef<number | null>(null);
 
-  // --- MOUSE TRACKING ---
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
-
-  // --- PERFORMANCE MONITOR & SETUP ---
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-    setTitleVisible(true);
-
-    // FPS Monitor
-    let frameCount = 0;
-    let lastTime = performance.now();
-    const monitorFps = () => {
-      const now = performance.now();
-      frameCount++;
-      if (now - lastTime >= 1000) {
-        if (frameCount < 30) setIsLowPower(true);
-        frameCount = 0;
-        lastTime = now;
-      }
-      requestAnimationFrame(monitorFps);
-    };
-    const raf = requestAnimationFrame(monitorFps);
-
-    return () => {
-      cancelAnimationFrame(raf);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // COPYWRITING UPDATE: More aggressive, hardware-focused
-  const headline = "DEFY LIMITS. PLAY GODLIKE.";
-  const subHeadline = "PUNE'S PREMIER GAMING DESTINATION";
-  
-  const taglineItems = [
-    { text: "RTX 4090 OC", color: "text-gg-cyan", icon: Cpu },
-    { text: "360Hz DYAC+", color: "text-gg-lime", icon: Zap },
-    { text: "PS5 PRO", color: "text-gg-purple", icon: Gamepad2 },
-    { text: "LAN ESPORTS", color: "text-gg-pink", icon: Wifi },
-  ];
+  const triggerDecode = () => {
+    let iteration = 0;
+    if (intervalRef.current) clearInterval(intervalRef.current);
 
-  // Floating Icons Configuration
-  const floatingIcons = [
-    { Icon: Crosshair, x: '10%', y: '20%', delay: 0 },
-    { Icon: Gamepad2, x: '85%', y: '15%', delay: 1 },
-    { Icon: Trophy, x: '15%', y: '70%', delay: 2 },
-    { Icon: Zap, x: '80%', y: '65%', delay: 1.5 },
-  ];
+    intervalRef.current = window.setInterval(() => {
+      setDisplayText(ALPHABET[Math.floor(Math.random() * ALPHABET.length)]);
+      
+      iteration += 1;
+      if (iteration > 10) { // 10 frames of scrambling
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setDisplayText(char);
+      }
+    }, 50); // Speed of scramble
+  };
+
+  // Auto-play for mobile (Ripple effect)
+  useEffect(() => {
+    if (isMobile) {
+      const delay = 1000 + (index * 200); // Staggered start
+      const loop = setInterval(() => {
+        triggerDecode();
+      }, 5000 + (index * 100)); // Loop every 5-6 seconds
+
+      const initialTimeout = setTimeout(() => {
+        triggerDecode();
+      }, delay);
+
+      return () => {
+        clearInterval(loop);
+        clearTimeout(initialTimeout);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      };
+    }
+  }, [isMobile, index, char]);
+
+  return (
+    <motion.span
+      onMouseEnter={() => {
+        setIsHovered(true);
+        triggerDecode();
+      }}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`inline-block whitespace-pre cursor-default transition-colors duration-300 ${
+        isHovered ? 'text-gg-cyan drop-shadow-[0_0_8px_rgba(0,217,255,0.8)]' : 'text-white'
+      }`}
+      style={{ display: 'inline-block', minWidth: char === " " ? '0.5em' : 'auto' }}
+    >
+      {displayText}
+    </motion.span>
+  );
+};
+
+export const Hero: React.FC = () => {
+  const containerRef = useRef<HTMLElement>(null);
+  const isInView = useInView(containerRef);
+  const { scrollY } = useScroll();
+  const yText = useTransform(scrollY, [0, 500], [0, 200]);
+  
+  // Mouse Logic for Spotlight
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    if (containerRef.current) {
+        containerRef.current.style.setProperty('--mouse-x', `${clientX}px`);
+        containerRef.current.style.setProperty('--mouse-y', `${clientY}px`);
+    }
+  };
+
+  const title1 = "GG";
+  const title2 = "WELLPLAYED";
+  const subtext = "Pune's Premier Gaming Destination | High-End PCs | PS5 | Tournaments";
 
   return (
     <section 
       ref={containerRef}
-      className="relative h-[100svh] w-full overflow-hidden flex flex-col items-center justify-center bg-gg-dark perspective-1000"
+      onMouseMove={handleMouseMove}
+      className="relative min-h-[100svh] w-full overflow-hidden flex flex-col items-center justify-center text-center bg-gg-dark perspective-1000 px-4"
     >
-      {/* ==================== BACKGROUND LAYERS ==================== */}
-
-      {/* LAYER 1: Base */}
-      <div className="absolute inset-0 bg-[#050714] z-0" />
-
-      {/* LAYER 2: Video Grid (Cinematic Loop) */}
-      <div className="absolute inset-0 z-[1] grid grid-cols-1 md:grid-cols-3 opacity-20 md:opacity-30 pointer-events-none">
-        {VIDEOS.map((video, idx) => (
-          <div key={video.id} className={`relative w-full h-full overflow-hidden border-r border-gg-dark/50 ${isMobile && idx > 0 ? 'hidden' : 'block'}`}>
-            <motion.div
-              className="w-full h-full"
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1.25 }}
-              transition={{ 
-                duration: 20, 
-                repeat: Infinity, 
-                repeatType: "reverse", 
-                ease: "linear",
-                delay: idx * 5 
-              }}
+      {/* LAYER 1: GAMING SCREENPLAYS - High Visibility */}
+      <div className="absolute inset-0 z-0 grid grid-cols-1 md:grid-cols-3 pointer-events-none bg-black">
+        {VIDEOS.map((video) => (
+          <div key={video.id} className="relative w-full h-full overflow-hidden border-r border-black/50">
+            <video
+              className="absolute inset-0 w-full h-full object-cover"
+              poster={video.poster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              style={{ opacity: 0.85 }} // 85% Opacity for high visibility
+              ref={el => { if (el && isInView) el.play().catch(() => {}); else if(el) el.pause(); }}
             >
-              {!isLowPower ? (
-                <video
-                  className="w-full h-full object-cover filter blur-[2px] contrast-125 saturate-0 md:saturate-50"
-                  poster={video.poster}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                >
-                   <source src={video.src} type="video/mp4" />
-                </video>
-              ) : (
-                <img src={video.poster} alt={video.label} className="w-full h-full object-cover blur-[1px]" />
-              )}
-            </motion.div>
-            {/* Genre Badge overlay on video */}
-            <div className="absolute top-4 left-4 text-[10px] font-mono font-bold tracking-widest text-white/40 border border-white/20 px-2 py-1 uppercase hidden md:block">
-              {video.genre} CAM
-            </div>
+              {isInView && <source src={video.src} type="video/mp4" />}
+            </video>
+            
+            {/* Polished Overlay: Lighter than before to show gameplay */}
+            {/* 1. Subtle tint to unify colors without hiding content */}
+            <div className="absolute inset-0 bg-blue-900/10 mix-blend-overlay" />
+            
+            {/* 2. Gradient Vignette only at edges for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+            
+            {/* 3. Tech Grid Overlay (Very subtle) */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.05)_1px,transparent_1px)] bg-[length:40px_40px] opacity-20" />
           </div>
         ))}
       </div>
 
-      {/* LAYER 3: Hex Grid Pattern */}
+      {/* LAYER 2: INTERACTIVE SPOTLIGHT (Desktop Only) */}
       <div 
-        className="absolute inset-0 z-[2] opacity-[0.15] pointer-events-none"
+        className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-300 hidden md:block"
         style={{
-          backgroundImage: `
-            linear-gradient(30deg, #444 12%, transparent 12.5%, transparent 87%, #444 87.5%, #444),
-            linear-gradient(150deg, #444 12%, transparent 12.5%, transparent 87%, #444 87.5%, #444),
-            linear-gradient(30deg, #444 12%, transparent 12.5%, transparent 87%, #444 87.5%, #444),
-            linear-gradient(150deg, #444 12%, transparent 12.5%, transparent 87%, #444 87.5%, #444),
-            linear-gradient(60deg, #777 25%, transparent 25.5%, transparent 75%, #777 75%, #777),
-            linear-gradient(60deg, #777 25%, transparent 25.5%, transparent 75%, #777 75%, #777)
-          `,
-          backgroundSize: '40px 70px',
-          backgroundPosition: '0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px' 
+          background: `radial-gradient(circle 800px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 100%)`,
         }}
       />
 
-      {/* LAYER 4: Interactive Spotlight (Desktop Only) */}
-      <motion.div
-        className="absolute inset-0 z-[3] pointer-events-none hidden md:block mix-blend-overlay"
-        style={{
-          background: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(0, 217, 255, 0.15), transparent 80%)`,
-        }}
-      />
-
-      {/* LAYER 5: Retro Scanlines */}
-      <div className="absolute inset-0 z-[4] pointer-events-none bg-[url('https://media.giphy.com/media/xT9IgN8YKQnCg8T5V6/giphy.gif')] opacity-[0.02] bg-repeat mix-blend-screen" />
-      <div className="absolute inset-0 z-[4] pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] opacity-20" />
-
-      {/* LAYER 6: Vignette & Gradient Overlay */}
-      <div className="absolute inset-0 z-[5] bg-gradient-to-b from-gg-dark/90 via-gg-dark/50 to-gg-dark" />
-      <div className="absolute inset-0 z-[5] bg-[radial-gradient(circle_at_center,transparent_0%,#050714_110%)]" />
-
-      {/* ==================== CONTENT LAYER ==================== */}
+      {/* LAYER 3: MAIN CONTENT */}
       <motion.div 
-        style={{ y: yText, opacity: opacityText }}
-        className="relative z-[20] flex flex-col items-center w-full max-w-7xl px-4 text-center"
+        style={{ y: yText, z: 20 }}
+        className="relative flex flex-col items-center justify-center w-full max-w-7xl mx-auto"
       >
-        
-        {/* 1. LOGO WITH GLITCH */}
-        {/* Adjusted text sizes for mobile responsiveness: text-5xl on mobile, text-7xl tablet, 10rem desktop */}
-        <div className="relative mb-2 md:mb-6 group cursor-default mt-12 md:mt-0">
-          <motion.h2 
-             initial={{ scale: 0.8, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             transition={{ duration: 0.8, ease: "easeOut" }}
-             className="relative z-10 text-5xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-gray-500 tracking-tighter filter drop-shadow-[0_0_10px_rgba(0,217,255,0.2)] leading-[0.9]"
-          >
-            GG WELLPLAYED
-          </motion.h2>
-          
-          {/* Glitch Duplicates - Adjusted for new size */}
-          <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-70 animate-glitch-1 mix-blend-screen text-5xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-gg-pink left-[2px] md:left-[3px] pointer-events-none leading-[0.9]">
-            GG WELLPLAYED
-          </div>
-          <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-70 animate-glitch-2 mix-blend-screen text-5xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-gg-lime -left-[2px] md:-left-[3px] pointer-events-none leading-[0.9]">
-            GG WELLPLAYED
-          </div>
-          <div className="absolute -inset-8 bg-gg-cyan/10 blur-[100px] rounded-full opacity-30 animate-pulse-slow pointer-events-none" />
+        {/* NEW TITLE ANIMATION: CYPHER DECODE */}
+        <div className="relative mb-10 w-full flex flex-col items-center">
+            
+            <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 z-10 select-none">
+                {/* 'GG' */}
+                <h1 className="font-heading font-black text-6xl md:text-9xl text-white tracking-tighter drop-shadow-2xl">
+                    <div className="flex">
+                        {title1.split("").map((char, i) => (
+                            <DecodeChar key={`gg-${i}`} char={char} index={i} />
+                        ))}
+                    </div>
+                </h1>
+
+                {/* 'WELLPLAYED' */}
+                <h1 className="font-heading font-black text-5xl md:text-9xl text-transparent tracking-tighter drop-shadow-2xl"
+                     style={{ WebkitTextStroke: '2px rgba(255,255,255,0.9)' }}
+                >
+                    <div className="flex flex-wrap justify-center">
+                        {title2.split("").map((char, i) => (
+                            <DecodeChar key={`wp-${i}`} char={char} index={i + 2} />
+                        ))}
+                    </div>
+                </h1>
+            </div>
+            
+            {/* Decorative Divider */}
+            <div className="w-64 md:w-96 h-1 bg-gradient-to-r from-transparent via-gg-cyan to-transparent mt-8 animate-pulse" />
         </div>
 
-        {/* 2. TYPEWRITER TITLE - Updated to Monospace for "System" look */}
-        <h1 className="h-10 md:h-20 flex items-center justify-center text-lg sm:text-2xl md:text-5xl font-mono font-bold text-white tracking-widest drop-shadow-2xl uppercase mb-2">
-          <span className="text-gg-cyan mr-2 md:mr-4">{">"}</span>
-          {headline.split("").map((char, index) => (
-            <motion.span
-              key={index}
-              initial={{ opacity: 0, display: "none" }}
-              animate={{ opacity: 1, display: "inline" }}
-              transition={{ delay: 0.8 + (index * 0.04) }}
-              className={index < 4 || index > 12 ? "text-white" : "text-gg-cyan"} 
-            >
-              {char === " " ? "\u00A0" : char}
-            </motion.span>
-          ))}
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ duration: 0.8, repeat: Infinity }}
-            className="ml-2 w-2 md:w-3 h-4 md:h-8 bg-gg-cyan inline-block align-middle"
-          />
-        </h1>
-
-        {/* 3. SUB-HEADLINE (Location Tagline) - Added specific request */}
-        <motion.div
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           transition={{ delay: 2.0 }}
-           className="flex items-center justify-center gap-2 text-gg-cyan/80 font-mono text-[10px] sm:text-sm md:text-lg tracking-widest uppercase bg-gg-dark/50 px-4 py-1.5 rounded-full border border-gg-cyan/10 backdrop-blur-sm"
-        >
-            <MapPin size={12} className="md:w-4 md:h-4" />
-            {subHeadline}
-        </motion.div>
-
-        {/* 4. TAGLINE - Tech Specs with Icons */}
+        {/* SUBHEADING */}
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.2, duration: 0.8 }}
-          className="mt-6 md:mt-10 flex flex-wrap justify-center items-center gap-3 md:gap-x-8 gap-y-3 max-w-5xl"
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 1, duration: 0.8 }}
+           className="relative px-8 py-3 bg-black/60 backdrop-blur-md border border-white/10 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)]"
         >
-          {taglineItems.map((item, idx) => (
-            <div key={idx} className="flex items-center group">
-              {/* Divider only on desktop, hidden on mobile for cleaner stacking */}
-              {idx > 0 && <span className="hidden md:inline text-gray-700 mr-8 text-lg font-thin">/</span>}
-              
-              <div className="flex items-center bg-white/5 md:bg-transparent px-3 py-1 md:p-0 rounded-full md:rounded-none border border-white/10 md:border-0 hover:bg-white/10 transition-colors">
-                <item.icon className={`mr-2 w-3 h-3 md:w-4 md:h-4 ${item.color} opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all`} />
-                <span className={`font-mono text-[10px] sm:text-xs md:text-base font-bold tracking-widest ${item.color} drop-shadow-md border-b border-transparent group-hover:border-current transition-all pb-0.5 whitespace-nowrap`}>
-                  {item.text}
-                </span>
-              </div>
-            </div>
-          ))}
+           <div className="flex items-center gap-4">
+               <span className="w-2 h-2 bg-gg-lime rounded-full animate-pulse shadow-[0_0_10px_#CCFF00]" />
+               <p className="text-white font-mono text-xs md:text-lg tracking-widest text-center uppercase">
+                  {subtext}
+               </p>
+               <span className="w-2 h-2 bg-gg-lime rounded-full animate-pulse shadow-[0_0_10px_#CCFF00]" />
+           </div>
         </motion.div>
 
-        {/* 5. CTA BUTTON */}
+        {/* ACTION BUTTON */}
         <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.6 }}
-          whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0,217,255,0.3)" }}
-          whileTap={{ scale: 0.95 }}
-          className="group relative px-8 py-4 md:px-14 md:py-6 bg-transparent overflow-hidden rounded-sm border-2 border-gg-cyan mt-10 md:mt-16 touch-manipulation cursor-pointer"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.5 }}
           onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}
-          aria-label="Book your gaming session now"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="mt-16 group relative inline-flex items-center justify-center px-10 py-4 font-heading font-bold text-gg-dark bg-gg-cyan clip-path-slant hover:shadow-[0_0_30px_rgba(0,217,255,0.6)] transition-all duration-300"
         >
-          {/* Scanline effect inside button */}
-          <div className="absolute inset-0 bg-[url('https://media.giphy.com/media/xT9IgN8YKQnCg8T5V6/giphy.gif')] opacity-10 mix-blend-overlay pointer-events-none" />
-          
-          <div className="absolute inset-0 w-0 bg-gg-cyan transition-all duration-[250ms] ease-out group-hover:w-full opacity-100" />
-          
-          <span className="relative z-10 text-gg-cyan group-hover:text-gg-dark font-heading font-black text-lg md:text-2xl tracking-[0.2em] uppercase transition-colors duration-200 italic flex items-center gap-3">
-             Start Game
-          </span>
+            <span className="relative flex items-center gap-3 text-xl tracking-widest uppercase">
+                Reserve Slot
+                <ArrowDown size={24} className="group-hover:translate-y-1 transition-transform" />
+            </span>
         </motion.button>
 
       </motion.div>
 
-      {/* ==================== FLOATING ELEMENTS (Icons) ==================== */}
-      <div className="absolute inset-0 z-[10] pointer-events-none overflow-hidden">
-        {floatingIcons.map((item, idx) => (
-          <motion.div
-            key={idx}
-            className="absolute text-gg-cyan/20 hidden md:block"
-            style={{ left: item.x, top: item.y }}
-            animate={{ 
-              y: [0, -20, 0], 
-              opacity: [0.1, 0.3, 0.1],
-              rotate: [0, 10, -10, 0]
-            }}
-            transition={{ 
-              duration: 5, 
-              delay: item.delay, 
-              repeat: Infinity,
-              ease: "easeInOut" 
-            }}
-          >
-            <item.Icon size={64} strokeWidth={1} />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* ==================== SCROLL INDICATOR ==================== */}
+      {/* SCROLL INDICATOR */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 3.5 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-3 z-[20] pointer-events-none cursor-pointer"
-        onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
+        transition={{ delay: 3 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 text-white/70 flex flex-col items-center gap-2 pointer-events-none"
       >
-        <motion.div
-           animate={{ y: [0, 10, 0] }}
-           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-           className="flex flex-col items-center"
-        >
-          <MousePointer2 size={24} className="text-gg-cyan mb-2" />
-          <span className="text-[10px] font-heading font-bold tracking-[0.2em] text-white uppercase bg-black/50 px-3 py-1 rounded-full border border-white/10 backdrop-blur">
-            Enter The Arena
-          </span>
-          <ArrowDown size={16} className="text-gg-cyan mt-1" />
-        </motion.div>
+        <span className="text-[10px] font-mono tracking-[0.3em] uppercase animate-pulse">Scroll to Start</span>
+        <div className="w-px h-16 bg-gradient-to-b from-gg-cyan to-transparent" />
       </motion.div>
-
+      
     </section>
   );
 };

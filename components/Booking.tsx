@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
-import { Calendar, Clock, Monitor, Gamepad, Loader2, CheckCircle, AlertCircle, User, Phone } from 'lucide-react';
+import { Calendar, Clock, Monitor, Gamepad, Loader2, CheckCircle, AlertCircle, User, Phone, Map } from 'lucide-react';
 import { Booking as BookingType } from '../types';
+import { SeatMap } from './SeatMap';
 
 // Configuration constants
 const WHATSAPP_NUMBER = "918888237925";
@@ -59,6 +60,7 @@ export const Booking: React.FC = () => {
   
   const [selectedTier, setSelectedTier] = useState(TIERS[0]);
   const [selectedDuration, setSelectedDuration] = useState(DURATIONS[0]);
+  const [selectedSeatId, setSelectedSeatId] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState(50);
   
   const [errors, setErrors] = useState<{date?: string; name?: string; phone?: string; general?: string}>({});
@@ -81,6 +83,13 @@ export const Booking: React.FC = () => {
     const calculated = Math.ceil(selectedTier.basePrice * selectedDuration.multiplier);
     setTotalPrice(calculated);
   }, [selectedTier, selectedDuration]);
+
+  const handleSeatSelect = (seatId: string, tierId: string) => {
+    setSelectedSeatId(seatId);
+    // Auto-select the pricing tier based on the seat
+    const tier = TIERS.find(t => t.id === tierId);
+    if (tier) setSelectedTier(tier);
+  };
 
   // Security: Rate Limiter
   const checkRateLimit = (): boolean => {
@@ -228,6 +237,7 @@ export const Booking: React.FC = () => {
 
 *Date:* ${formattedDate}
 *Platform:* ${selectedTier.label}
+${selectedSeatId ? `*Seat Preference:* ${selectedSeatId}` : ''}
 *Duration:* ${selectedDuration.text}
 *Total:* ₹${totalPrice}
 
@@ -243,6 +253,7 @@ Please confirm this slot.`;
         setCustomerName('');
         setPhoneNumber('');
         setDate('');
+        setSelectedSeatId(null);
         setErrors({});
       }, 500);
 
@@ -279,12 +290,26 @@ Please confirm this slot.`;
            className="text-center mb-8 md:mb-12"
         >
           <h2 className="text-3xl md:text-5xl font-heading font-bold mb-4">BOOK YOUR <span className="text-gg-cyan">SESSION</span></h2>
-          <p className="text-gray-400 font-mono text-sm md:text-lg">Select your rig, choose your time, and get gaming.</p>
+          <p className="text-gray-400 font-mono text-sm md:text-lg">Select your rig from the map below or fill out the form directly.</p>
         </motion.div>
 
-        <div className="bg-gg-dark rounded-xl md:rounded-2xl p-4 md:p-12 shadow-2xl border border-gray-800">
+        <div className="bg-gg-dark rounded-xl md:rounded-2xl p-4 md:p-8 shadow-2xl border border-gray-800">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             
+            {/* Visual Seat Map */}
+            <div className="flex flex-col">
+              <h3 className="flex items-center text-gg-cyan font-bold mb-4 tracking-wide text-sm md:text-base">
+                <Map className="mr-2 w-4 h-4" /> INTERACTIVE FLOOR PLAN
+              </h3>
+              <SeatMap 
+                selectedSeatId={selectedSeatId}
+                onSeatSelect={handleSeatSelect}
+              />
+              <p className="text-xs text-gray-500 mt-3 font-mono">
+                *Click a seat to automatically select platform and tier.
+              </p>
+            </div>
+
             {/* Form Section */}
             <div className="space-y-6 md:space-y-8">
               
@@ -314,7 +339,6 @@ Please confirm this slot.`;
                       setCustomerName(e.target.value);
                       if(errors.name) setErrors({...errors, name: undefined});
                     }}
-                    // A11y & Mobile Opt
                     aria-invalid={!!errors.name}
                     aria-describedby={errors.name ? "name-error" : undefined}
                     aria-required="true"
@@ -340,7 +364,6 @@ Please confirm this slot.`;
                       setPhoneNumber(val);
                       if(errors.phone) setErrors({...errors, phone: undefined});
                     }}
-                    // A11y & Mobile Opt
                     aria-invalid={!!errors.phone}
                     aria-describedby={errors.phone ? "phone-error" : undefined}
                     aria-required="true"
@@ -409,7 +432,11 @@ Please confirm this slot.`;
                       key={t.id}
                       role="radio"
                       aria-checked={selectedTier.id === t.id}
-                      onClick={() => setSelectedTier(t)}
+                      onClick={() => {
+                         setSelectedTier(t);
+                         // If switching manually, clear seat selection to avoid confusion
+                         if (selectedSeatId) setSelectedSeatId(null);
+                      }}
                       className={`p-3 md:p-4 rounded-xl border text-left transition-all duration-300 flex justify-between items-center group relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-gg-purple ${selectedTier.id === t.id ? 'border-gg-purple bg-gg-purple/10' : 'border-gray-700 bg-gg-medium/50 hover:border-gray-500'}`}
                     >
                       <div className="relative z-10 flex items-center overflow-hidden">
@@ -456,60 +483,71 @@ Please confirm this slot.`;
             </div>
 
             {/* Receipt / Total Section */}
-            <div className="flex flex-col h-full mt-4 lg:mt-0">
+            <div className="flex flex-col h-full mt-4 lg:mt-0 lg:col-span-2">
                <div className="flex-grow flex flex-col justify-center bg-gg-medium rounded-2xl p-6 md:p-10 border border-gray-800 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
                   
-                  <div className="relative z-10">
-                    <h3 className="text-gray-400 font-mono mb-2 text-base md:text-lg tracking-widest uppercase">Estimated Total</h3>
-                    
-                    <div className="flex items-baseline mb-4">
-                        <span className="text-3xl md:text-5xl font-bold text-gg-cyan mr-2">₹</span>
-                        {/* Adjusted text size for mobile */}
-                        <div className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold tracking-tighter">
-                          <AnimatedCounter value={totalPrice} />
+                  <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 className="text-gray-400 font-mono mb-2 text-base md:text-lg tracking-widest uppercase">Estimated Total</h3>
+                        
+                        <div className="flex items-baseline mb-4">
+                            <span className="text-3xl md:text-5xl font-bold text-gg-cyan mr-2">₹</span>
+                            {/* Adjusted text size for mobile */}
+                            <div className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold tracking-tighter">
+                            <AnimatedCounter value={totalPrice} />
+                            </div>
+                        </div>
+
+                        <div className="space-y-3 md:space-y-4 text-sm md:text-lg text-gray-300 font-mono">
+                            <div className="flex justify-between">
+                                <span>Platform Rate</span>
+                                <span>₹{selectedTier.basePrice}/hr</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Duration</span>
+                                <span>{selectedDuration.text}</span>
+                            </div>
+                            {selectedSeatId && (
+                                <div className="flex justify-between text-gg-purple font-bold">
+                                    <span>Selected Seat</span>
+                                    <span>{selectedSeatId}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between text-gg-lime font-bold">
+                                <span>Multiplier</span>
+                                <span>x{selectedDuration.multiplier}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="h-px w-full bg-gray-700 my-4 md:my-6" />
+                    <div>
+                        {errors.general && (
+                        <div role="alert" className="mb-4 p-3 bg-red-900/20 border border-red-500/50 rounded text-red-400 text-xs md:text-sm text-center">
+                            {errors.general}
+                        </div>
+                        )}
 
-                    <div className="space-y-3 md:space-y-4 text-sm md:text-lg text-gray-300 font-mono mb-8 md:mb-10">
-                        <div className="flex justify-between">
-                            <span>Platform Rate</span>
-                            <span>₹{selectedTier.basePrice}/hr</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Duration</span>
-                            <span>{selectedDuration.text}</span>
-                        </div>
-                        <div className="flex justify-between text-gg-lime font-bold">
-                            <span>Multiplier</span>
-                            <span>x{selectedDuration.multiplier}</span>
-                        </div>
+                        <motion.button 
+                        onClick={handleConfirmBooking}
+                        disabled={status !== 'IDLE'}
+                        whileHover={status === 'IDLE' ? { scale: 1.02 } : {}}
+                        whileTap={status === 'IDLE' ? { scale: 0.98 } : {}}
+                        className={`w-full py-4 md:py-5 font-bold text-lg md:text-xl rounded-xl shadow-xl transition-all relative overflow-hidden flex items-center justify-center group/btn focus:outline-none focus:ring-2 focus:ring-white ${
+                            status === 'IDLE' ? 'bg-gradient-to-r from-gg-cyan to-gg-purple text-white' : status === 'REDIRECTING' ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        }`}
+                        aria-label={status === 'PROCESSING' ? 'Processing booking...' : 'Confirm Booking'}
+                        >
+                            <AnimatePresence mode="wait">
+                                {status === 'IDLE' && <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>CONFIRM BOOKING</motion.span>}
+                                {status === 'PROCESSING' && <motion.span key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center"><Loader2 className="animate-spin mr-3" /> PROCESSING...</motion.span>}
+                                {status === 'REDIRECTING' && <motion.span key="redirecting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center"><CheckCircle className="mr-3" /> REDIRECTING...</motion.span>}
+                            </AnimatePresence>
+                        </motion.button>
+                        <p className="text-center text-xs text-gray-500 mt-4">
+                            By clicking confirm, you will be redirected to WhatsApp to finalize your payment and slot.
+                        </p>
                     </div>
-                    
-                    {errors.general && (
-                      <div role="alert" className="mb-4 p-3 bg-red-900/20 border border-red-500/50 rounded text-red-400 text-xs md:text-sm text-center">
-                        {errors.general}
-                      </div>
-                    )}
-
-                    <motion.button 
-                      onClick={handleConfirmBooking}
-                      disabled={status !== 'IDLE'}
-                      whileHover={status === 'IDLE' ? { scale: 1.02 } : {}}
-                      whileTap={status === 'IDLE' ? { scale: 0.98 } : {}}
-                      className={`w-full py-4 md:py-5 font-bold text-lg md:text-xl rounded-xl shadow-xl transition-all relative overflow-hidden flex items-center justify-center group/btn focus:outline-none focus:ring-2 focus:ring-white ${
-                          status === 'IDLE' ? 'bg-gradient-to-r from-gg-cyan to-gg-purple text-white' : status === 'REDIRECTING' ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      }`}
-                      aria-label={status === 'PROCESSING' ? 'Processing booking...' : 'Confirm Booking'}
-                    >
-                        <AnimatePresence mode="wait">
-                            {status === 'IDLE' && <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>CONFIRM BOOKING</motion.span>}
-                            {status === 'PROCESSING' && <motion.span key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center"><Loader2 className="animate-spin mr-3" /> PROCESSING...</motion.span>}
-                            {status === 'REDIRECTING' && <motion.span key="redirecting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center"><CheckCircle className="mr-3" /> REDIRECTING...</motion.span>}
-                        </AnimatePresence>
-                    </motion.button>
                   </div>
                </div>
             </div>

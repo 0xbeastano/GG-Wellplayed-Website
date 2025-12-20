@@ -39,7 +39,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FONTS UPGRADE: Rajdhani for UI (Tech look), Orbitron for Headings (Futuristic), Syncopate for Logo -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- LocalBusiness Schema (JSON-LD) -->
     <script type="application/ld+json">
@@ -86,17 +87,6 @@
     }
     </script>
 
-    <!-- Google Analytics 4 (Placeholder) -->
-    <!-- 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
-    </script> 
-    -->
-    
     <!-- Tailwind CSS with Custom Config -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -117,15 +107,17 @@
               }
             },
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              heading: ['Poppins', 'sans-serif'],
+              sans: ['Rajdhani', 'sans-serif'], // Tech UI Font
+              heading: ['Orbitron', 'sans-serif'], // Futuristic Headers
               mono: ['Space Mono', 'monospace'],
+              wide: ['Syncopate', 'sans-serif'],
             },
             animation: {
               'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               'glitch-1': 'glitch-1 2.5s infinite linear alternate-reverse',
               'glitch-2': 'glitch-2 3s infinite linear alternate-reverse',
               'scan': 'scan 4s linear infinite',
+              'grid-move': 'gridMove 20s linear infinite',
             },
             keyframes: {
               'glitch-1': {
@@ -147,6 +139,10 @@
               'scan': {
                 '0%': { backgroundPosition: '0% 0%' },
                 '100%': { backgroundPosition: '0% 100%' },
+              },
+              'gridMove': {
+                '0%': { transform: 'translateY(0)' },
+                '100%': { transform: 'translateY(50px)' }
               }
             }
           }
@@ -201,10 +197,12 @@
     <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
-    "framer-motion": "https://esm.sh/framer-motion@^12.23.26",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+    "framer-motion": "https://esm.sh/framer-motion@11.0.8?external=react,react-dom",
+    "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react,react-dom",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/"
   }
