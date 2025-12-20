@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
+import { TiltCard } from './TiltCard';
 
 type PlanType = 'PC' | 'CONSOLE';
 
@@ -15,7 +16,8 @@ export const Pricing: React.FC = () => {
         price: 50,
         features: ["144Hz Monitor", "GTX 1660 Ti", "8GB RAM", "Standard Library"],
         color: "border-gg-cyan",
-        glow: "shadow-gg-cyan/20"
+        glow: "shadow-gg-cyan/20",
+        glowColor: "#00D9FF"
       },
       {
         id: 'high',
@@ -24,7 +26,8 @@ export const Pricing: React.FC = () => {
         features: ["240Hz Monitor", "RTX 4080 Ti", "16GB RAM", "Elite Library", "Priority Booking"],
         isBestValue: true,
         color: "border-gg-purple",
-        glow: "shadow-gg-purple/40"
+        glow: "shadow-gg-purple/40",
+        glowColor: "#9D00FF"
       }
     ],
     CONSOLE: [
@@ -34,7 +37,8 @@ export const Pricing: React.FC = () => {
         price: 100,
         features: ["PlayStation 4 Pro", "2 Controllers", "Premium Games", "Private Room"],
         color: "border-gg-pink",
-        glow: "shadow-gg-pink/20"
+        glow: "shadow-gg-pink/20",
+        glowColor: "#FF006E"
       }
     ]
   };
@@ -87,43 +91,46 @@ export const Pricing: React.FC = () => {
                 animate={{ opacity: 1, scale: plan.isBestValue ? 1.02 : 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
-                whileHover={{ scale: plan.isBestValue ? 1.05 : 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`bg-gg-medium rounded-2xl p-6 md:p-8 border-2 ${plan.color} relative ${plan.isBestValue ? `shadow-xl ${plan.glow}` : ''}`}
-                data-hover // Trigger hover effect on cursor
+                className="h-full"
               >
-                {plan.isBestValue && (
-                  <div className="absolute -top-4 right-4 bg-gradient-to-r from-gg-purple to-gg-pink px-4 py-1 rounded-full text-xs font-bold animate-pulse">
-                    BEST VALUE
-                  </div>
-                )}
-                
-                <h3 className="text-xl font-heading font-bold mb-4 text-gray-200">{plan.name}</h3>
-                <div className="flex items-end mb-6">
-                  <span className="text-4xl md:text-5xl font-bold text-white">₹{plan.price}</span>
-                  <span className="text-gray-400 ml-2 mb-2 text-sm md:text-base">/ hour</span>
-                </div>
-
-                <ul className="space-y-3 md:space-y-4 mb-8">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center text-sm text-gray-300">
-                      <Check size={16} className={`mr-3 flex-shrink-0 ${plan.isBestValue ? 'text-gg-purple' : 'text-gg-cyan'}`} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                <button 
-                  onClick={() => handleSelectPlan(plan.id)}
-                  className={`w-full py-3 md:py-4 rounded-lg font-bold transition-all duration-300 relative z-20 cursor-pointer active:scale-95
-                    ${plan.isBestValue 
-                      ? 'bg-gradient-to-r from-gg-purple to-gg-pink hover:shadow-[0_0_20px_#9D00FF] text-white' 
-                      : 'border border-gg-cyan text-gg-cyan hover:bg-gg-cyan hover:text-gg-dark'
-                    }`}
-                  data-hover // Ensure cursor expands
+                <TiltCard 
+                  className={`bg-gg-medium rounded-2xl p-6 md:p-8 border-2 ${plan.color} relative h-full flex flex-col justify-between ${plan.isBestValue ? `shadow-xl ${plan.glow}` : ''}`}
+                  glowColor={plan.glowColor}
                 >
-                  SELECT
-                </button>
+                  <div>
+                    {plan.isBestValue && (
+                      <div className="absolute -top-4 right-4 bg-gradient-to-r from-gg-purple to-gg-pink px-4 py-1 rounded-full text-xs font-bold animate-pulse shadow-lg z-20">
+                        BEST VALUE
+                      </div>
+                    )}
+                    
+                    <h3 className="text-xl font-heading font-bold mb-4 text-gray-200">{plan.name}</h3>
+                    <div className="flex items-end mb-6">
+                      <span className="text-4xl md:text-5xl font-bold text-white">₹{plan.price}</span>
+                      <span className="text-gray-400 ml-2 mb-2 text-sm md:text-base">/ hour</span>
+                    </div>
+
+                    <ul className="space-y-3 md:space-y-4 mb-8">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-center text-sm text-gray-300">
+                          <Check size={16} className={`mr-3 flex-shrink-0 ${plan.isBestValue ? 'text-gg-purple' : 'text-gg-cyan'}`} />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <button 
+                    onClick={() => handleSelectPlan(plan.id)}
+                    className={`w-full py-3 md:py-4 rounded-lg font-bold transition-all duration-300 relative z-20 cursor-pointer active:scale-95
+                      ${plan.isBestValue 
+                        ? 'bg-gradient-to-r from-gg-purple to-gg-pink hover:shadow-[0_0_20px_#9D00FF] text-white' 
+                        : 'border border-gg-cyan text-gg-cyan hover:bg-gg-cyan hover:text-gg-dark'
+                      }`}
+                  >
+                    SELECT
+                  </button>
+                </TiltCard>
               </motion.div>
             ))}
           </AnimatePresence>

@@ -12,6 +12,24 @@ import { LocationContact } from './components/LocationContact';
 import { Footer } from './components/Footer';
 import { CustomCursor } from './components/CustomCursor';
 import { Dashboard } from './components/Dashboard';
+import { Navbar } from './components/Navbar';
+import { FAQ } from './components/FAQ';
+
+// Wrapper component for reveal on scroll animation
+const SectionWrapper: React.FC<{ children: React.ReactNode; id?: string }> = ({ children, id }) => {
+  return (
+    <motion.div
+      id={id}
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10% 0px -10% 0px" }}
+      transition={{ duration: 0.7, type: "spring", bounce: 0.3 }}
+      className="relative z-10"
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -126,20 +144,64 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="bg-gg-dark text-white relative md:cursor-none overflow-x-hidden selection:bg-gg-cyan selection:text-gg-dark">
+    <div className="bg-gg-dark text-white relative md:cursor-none overflow-x-hidden selection:bg-gg-cyan selection:text-gg-dark font-sans">
+      
+      {/* GLOBAL BACKGROUND GRID ANIMATION */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-20">
+        <div className="absolute inset-0 bg-[linear-gradient(transparent_0%,rgba(0,217,255,0.05)_50%,transparent_100%)] bg-[length:100%_100px] animate-grid-move" />
+        <div 
+          className="absolute inset-0" 
+          style={{
+             backgroundImage: 'linear-gradient(rgba(157, 0, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(157, 0, 255, 0.05) 1px, transparent 1px)',
+             backgroundSize: '50px 50px',
+             transform: 'perspective(500px) rotateX(20deg)',
+             transformOrigin: 'top'
+          }}
+        />
+      </div>
+
       <CustomCursor />
+      <Navbar />
       <Dashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
       
       <main className="relative z-10 w-full overflow-hidden">
         <Hero />
-        <Facilities />
-        <Pricing />
-        <Features />
-        <GamesLibrary />
-        <Tournaments />
-        <Testimonials />
-        <Booking />
-        <LocationContact />
+        
+        <SectionWrapper id="facilities">
+          <Facilities />
+        </SectionWrapper>
+        
+        <SectionWrapper id="pricing">
+          <Pricing />
+        </SectionWrapper>
+        
+        <SectionWrapper>
+          <Features />
+        </SectionWrapper>
+        
+        <SectionWrapper id="games">
+          <GamesLibrary />
+        </SectionWrapper>
+        
+        <SectionWrapper id="tournaments">
+          <Tournaments />
+        </SectionWrapper>
+        
+        <SectionWrapper>
+          <Testimonials />
+        </SectionWrapper>
+        
+        <SectionWrapper>
+          <FAQ />
+        </SectionWrapper>
+        
+        <SectionWrapper>
+          <Booking />
+        </SectionWrapper>
+        
+        <SectionWrapper>
+          <LocationContact />
+        </SectionWrapper>
       </main>
 
       <Footer />

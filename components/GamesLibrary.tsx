@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { TiltCard } from './TiltCard';
 
 const games = [
   { 
@@ -72,25 +73,30 @@ export const GamesLibrary: React.FC = () => {
               key={index}
               whileHover={{ scale: 1.05, zIndex: 10 }}
               whileTap={{ scale: 0.95 }}
-              className="relative flex-shrink-0 w-48 h-72 md:w-64 md:h-96 rounded-xl overflow-hidden border border-gray-800 shadow-2xl group cursor-pointer transition-all duration-300 hover:border-gg-cyan hover:shadow-[0_0_25px_rgba(0,217,255,0.3)]"
+              className="relative flex-shrink-0 w-48 h-72 md:w-64 md:h-96 rounded-xl cursor-pointer"
             >
-              <div className="absolute inset-0 bg-gray-900 animate-pulse" /> {/* Placeholder while loading */}
-              <img 
-                src={game.img} 
-                alt={game.title} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                loading="lazy" 
-                decoding="async"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-gg-dark via-transparent to-transparent opacity-0 group-hover:opacity-90 transition-opacity duration-300" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                <span className="text-[10px] uppercase tracking-widest font-bold text-gg-lime mb-1 block">
-                  {game.genre}
-                </span>
-                <h3 className="text-lg font-bold text-white leading-tight">
-                  {game.title}
-                </h3>
-              </div>
+              <TiltCard 
+                className="w-full h-full rounded-xl overflow-hidden border border-gray-800 shadow-2xl group hover:border-gg-cyan transition-colors duration-300"
+                glowColor="#00D9FF"
+              >
+                <div className="absolute inset-0 bg-gray-900 animate-pulse" /> {/* Placeholder while loading */}
+                <img 
+                  src={game.img} 
+                  alt={game.title} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                  loading="lazy" 
+                  decoding="async"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gg-dark via-transparent to-transparent opacity-0 group-hover:opacity-90 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gg-lime mb-1 block">
+                    {game.genre}
+                  </span>
+                  <h3 className="text-lg font-bold text-white leading-tight">
+                    {game.title}
+                  </h3>
+                </div>
+              </TiltCard>
             </motion.div>
           ))}
         </motion.div>
