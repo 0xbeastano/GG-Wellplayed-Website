@@ -59,16 +59,16 @@ export const Pricing: React.FC = () => {
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-3xl md:text-5xl font-heading font-bold mb-6 md:mb-8">PRICING PLANS</h2>
           
-          <div className="inline-flex bg-gg-medium rounded-full p-1 border border-gg-cyan/30 cursor-pointer shadow-lg">
+          <div className="inline-flex bg-gg-medium rounded-full p-1 border border-gg-cyan/30 cursor-pointer shadow-lg max-w-full overflow-hidden">
             <button
               onClick={() => setActiveType('PC')}
-              className={`px-6 py-3 md:px-8 md:py-3 rounded-full font-bold transition-all duration-300 relative z-20 min-w-[120px] md:min-w-[150px] text-sm md:text-base ${activeType === 'PC' ? 'bg-gg-cyan text-gg-dark shadow-[0_0_15px_#00D9FF]' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-3 md:px-8 md:py-3 rounded-full font-bold transition-all duration-300 relative z-20 min-w-[100px] md:min-w-[150px] text-xs md:text-base ${activeType === 'PC' ? 'bg-gg-cyan text-gg-dark shadow-[0_0_15px_#00D9FF]' : 'text-gray-400 hover:text-white'}`}
             >
               PC GAMING
             </button>
             <button
               onClick={() => setActiveType('CONSOLE')}
-              className={`px-6 py-3 md:px-8 md:py-3 rounded-full font-bold transition-all duration-300 relative z-20 min-w-[120px] md:min-w-[150px] text-sm md:text-base ${activeType === 'CONSOLE' ? 'bg-gg-purple text-white shadow-[0_0_15px_#9D00FF]' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-3 md:px-8 md:py-3 rounded-full font-bold transition-all duration-300 relative z-20 min-w-[100px] md:min-w-[150px] text-xs md:text-base ${activeType === 'CONSOLE' ? 'bg-gg-purple text-white shadow-[0_0_15px_#9D00FF]' : 'text-gray-400 hover:text-white'}`}
             >
               CONSOLE
             </button>

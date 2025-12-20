@@ -17,7 +17,7 @@ export const Features: React.FC = () => {
   return (
     <section className="min-h-screen flex flex-col md:flex-row bg-gg-dark overflow-hidden">
       {/* Left Image Side */}
-      <div className="w-full md:w-3/5 relative min-h-[50vh] md:min-h-screen group">
+      <div className="w-full md:w-3/5 relative min-h-[40vh] md:min-h-screen group">
         <img 
           src="https://picsum.photos/1200/1000?random=10" 
           alt="Gaming Interior" 

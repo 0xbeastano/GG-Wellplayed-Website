@@ -14,7 +14,7 @@ export const LocationContact: React.FC = () => {
            style={{ border: 0, filter: 'grayscale(100%) invert(90%) contrast(85%)' }} 
            allowFullScreen 
            loading="lazy"
-           title="Location Map"
+           title="Location Map showing GGwellplayed Gaming Cafe"
          ></iframe>
          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <div className="relative">
@@ -33,30 +33,37 @@ export const LocationContact: React.FC = () => {
         
         <form className="space-y-4 md:space-y-6 mb-8 md:mb-12">
           <div>
+            <label htmlFor="contact-name" className="sr-only">Your Name</label>
             <input 
+              id="contact-name"
               type="text" 
               placeholder="YOUR NAME" 
-              className="w-full bg-transparent border-b border-gray-700 py-3 text-white focus:border-gg-cyan focus:outline-none transition-colors placeholder-gray-600 font-mono"
+              className="w-full bg-transparent border-b border-gray-700 py-3 text-white focus:border-gg-cyan focus:outline-none transition-colors placeholder-gray-500 font-mono"
             />
           </div>
           <div>
+            <label htmlFor="contact-email" className="sr-only">Your Email</label>
             <input 
+              id="contact-email"
               type="email" 
               placeholder="YOUR EMAIL" 
-              className="w-full bg-transparent border-b border-gray-700 py-3 text-white focus:border-gg-cyan focus:outline-none transition-colors placeholder-gray-600 font-mono"
+              className="w-full bg-transparent border-b border-gray-700 py-3 text-white focus:border-gg-cyan focus:outline-none transition-colors placeholder-gray-500 font-mono"
             />
           </div>
           <div>
+            <label htmlFor="contact-message" className="sr-only">Message</label>
             <textarea 
+              id="contact-message"
               placeholder="MESSAGE" 
               rows={4}
-              className="w-full bg-transparent border-b border-gray-700 py-3 text-white focus:border-gg-cyan focus:outline-none transition-colors placeholder-gray-600 font-mono"
+              className="w-full bg-transparent border-b border-gray-700 py-3 text-white focus:border-gg-cyan focus:outline-none transition-colors placeholder-gray-500 font-mono"
             ></textarea>
           </div>
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full md:w-auto px-8 py-3 border border-gg-cyan text-gg-cyan font-bold hover:bg-gg-cyan hover:text-gg-dark transition-all"
+            type="submit"
+            className="w-full md:w-auto px-8 py-3 border border-gg-cyan text-gg-cyan font-bold hover:bg-gg-cyan hover:text-gg-dark transition-all focus:outline-none focus:ring-2 focus:ring-gg-cyan"
           >
             SEND MESSAGE
           </motion.button>
@@ -64,19 +71,19 @@ export const LocationContact: React.FC = () => {
 
         <div className="grid grid-cols-1 gap-4 text-sm text-gray-400">
           <div className="flex items-start">
-            <MapPin className="mr-3 text-gg-purple flex-shrink-0" size={20} />
+            <MapPin className="mr-3 text-gg-purple flex-shrink-0" size={20} aria-hidden="true" />
             <p>Survey No 25, 2nd Floor, Kojagiri Building, Satara Rd, Pune, MH 411043</p>
           </div>
           <div className="flex items-center">
-            <Phone className="mr-3 text-gg-purple flex-shrink-0" size={20} />
+            <Phone className="mr-3 text-gg-purple flex-shrink-0" size={20} aria-hidden="true" />
             <p>+91 98765 43210</p>
           </div>
           <div className="flex items-center">
-            <Mail className="mr-3 text-gg-purple flex-shrink-0" size={20} />
+            <Mail className="mr-3 text-gg-purple flex-shrink-0" size={20} aria-hidden="true" />
             <p>hello@ggwellplayed.in</p>
           </div>
           <div className="flex items-center">
-            <Clock className="mr-3 text-gg-purple flex-shrink-0" size={20} />
+            <Clock className="mr-3 text-gg-purple flex-shrink-0" size={20} aria-hidden="true" />
             <p>9:00 AM - 10:00 PM Daily</p>
           </div>
         </div>
