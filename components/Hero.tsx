@@ -1,51 +1,167 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, useMotionTemplate } from 'framer-motion';
-import { ArrowDown, Crosshair, Gamepad2, Trophy, Zap, MousePointer2, Cpu, Wifi } from 'lucide-react';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { ArrowDown, WifiOff, Cpu } from 'lucide-react';
 
+// Video Configuration Interface
 interface VideoConfig {
   id: string;
-  src: string;
+  src: string; // Using placeholders for demo, replace with local assets
   poster: string;
-  label: string;
-  genre: string;
+  alt: string;
 }
 
-// Optimized video assets
 const VIDEOS: VideoConfig[] = [
   {
-    id: 'fps',
+    id: 'cs2',
+    // Using high-quality optimized external placeholders for demonstration. 
+    // In production, replace src with: "/videos/csgo-gameplay-optimized.mp4"
     src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", 
     poster: "https://picsum.photos/id/1/800/1200", 
-    label: "CS:GO 2",
-    genre: "SHOOTER"
+    alt: "CS:GO 2 Tactical Gameplay"
   },
   {
-    id: 'moba',
-    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", 
+    id: 'valorant',
+    // In production: "/videos/valorant-gameplay-optimized.mp4"
+    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
     poster: "https://picsum.photos/id/2/800/1200",
-    label: "DOTA 2",
-    genre: "STRATEGY"
+    alt: "Valorant Ability Usage"
   },
   {
-    id: 'action',
+    id: 'gta',
+    // In production: "/videos/gta-gameplay-optimized.mp4"
     src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
     poster: "https://picsum.photos/id/3/800/1200",
-    label: "GTA V",
-    genre: "OPEN WORLD"
+    alt: "GTA V High Speed Action"
   }
 ];
 
 export const Hero: React.FC = () => {
   const containerRef = useRef<HTMLElement>(null);
-  
-  // Mouse Interaction for Spotlight
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isInView = useInView(containerRef);
   
   // Parallax Text
   const { scrollY } = useScroll();
-  const yText = useTransform(scrollY, [0, 500], [0, 250]);
-  const opacityText = useTransform(scrollY, [0, 300], [1, 0]);
+  const yText = useTransform(scrollY, [0, 500], [0, 200]);
+  
+  // Device Capabilities State
+  const [isLowPower, setIsLowPower] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // --- PERFORMANCE OPTIMIZATION ENGINE ---
+  useEffect(() => {
+    const checkSystem = () => {
+      // 1. Detect Mobile
+      const mobileCheck = window.innerWidth < 768;
+      setIsMobile(mobileCheck);
+
+      // 2. Network Speed Detection (Experimental API)
+      const connection = (navigator as any).connection;
+      const slowConnection = connection ? ['slow-2g', '2g', '3g'].includes(connection.effectiveType) : false;
+
+      // 3. Hardware Concurrency (Low-end device detection)
+      const cores = navigator.hardwareConcurrency || 4;
+      const lowCores = cores < 4;
+
+      // 4. Reduced Motion Preference
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (slowConnection || lowCores || reducedMotion) {
+        setIsLowPower(true);
+        console.log("GG_OPTIMIZER: Low power mode enabled");
+      }
+    };
+
+    checkSystem();
+  }, []);
+
+  // --- PARTICLE SYSTEM (Layer 3) ---
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true }); // Optimize for transparency
+    if (!ctx) return;
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    
+    const colors = ['#00D9FF', '#9D00FF', '#FF006E'];
+    // Reduce particle count significantly on mobile/low-power
+    const particleCount = isMobile || isLowPower ? 20 : 60; 
+
+    interface Particle {
+      x: number; y: number; vx: number; vy: number;
+      size: number; color: string; depth: number;
+    }
+
+    const particles: Particle[] = [];
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 2 + 0.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        depth: Math.random() * 0.5 + 0.5,
+      });
+    }
+
+    let animationFrameId: number;
+    let targetMouseX = 0; 
+    let targetMouseY = 0;
+    let currentMouseX = 0; 
+    let currentMouseY = 0;
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+      
+      // Smooth mouse parallax (disabled on mobile)
+      if (!isMobile) {
+        currentMouseX += (targetMouseX - currentMouseX) * 0.05;
+        currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+      }
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Wrap logic
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        // Parallax calc
+        const px = p.x + (currentMouseX * p.depth * 40);
+        const py = p.y + (currentMouseY * p.depth * 40);
+
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Connections (Only on high-end desktop)
+        if (!isMobile && !isLowPower) {
+           particles.forEach(p2 => {
+             const dx = px - (p2.x + (currentMouseX * p2.depth * 40));
+             const dy = py - (p2.y + (currentMouseY * p2.depth * 40));
+             const dist = Math.sqrt(dx*dx + dy*dy);
+             if (dist < 100) {
+               ctx.strokeStyle = `rgba(0, 217, 255, ${1 - dist/100})`;
+               ctx.lineWidth = 0.2;
+               ctx.beginPath();
+               ctx.moveTo(px, py);
+               ctx.lineTo(p2.x + (currentMouseX * p2.depth * 40), p2.y + (currentMouseY * p2.depth * 40));
+               ctx.stroke();
+             }
+           });
+        }
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
 
   // Performance State
   const [isLowPower, setIsLowPower] = useState(false);
@@ -57,8 +173,9 @@ export const Hero: React.FC = () => {
   // --- MOUSE TRACKING ---
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
+      if (isMobile) return;
+      targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      targetMouseY = (e.clientY / window.innerHeight) * 2 - 1;
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -87,145 +204,106 @@ export const Hero: React.FC = () => {
     return () => {
       cancelAnimationFrame(raf);
     };
-  }, [isLowPower, isMobile]);
+  }, [isMobile, isLowPower]);
 
-  // COPYWRITING UPDATE: More aggressive, hardware-focused
-  const headline = "DEFY LIMITS. PLAY GODLIKE.";
-  
-  const taglineItems = [
-    { text: "RTX 4090 OC EDITION", color: "text-gg-cyan", icon: Cpu },
-    { text: "360Hz DYAC+ PANELS", color: "text-gg-lime", icon: Zap },
-    { text: "PS5 PRO IMMERSION", color: "text-gg-purple", icon: Gamepad2 },
-    { text: "GIGABIT FIBER LAN", color: "text-gg-pink", icon: Wifi },
-  ];
-
-  // Floating Icons Configuration
-  const floatingIcons = [
-    { Icon: Crosshair, x: '10%', y: '20%', delay: 0 },
-    { Icon: Gamepad2, x: '85%', y: '15%', delay: 1 },
-    { Icon: Trophy, x: '15%', y: '70%', delay: 2 },
-    { Icon: Zap, x: '80%', y: '65%', delay: 1.5 },
-  ];
+  const headline = "GAME HARDER AT GGWELLPLAYED";
+  const words = headline.split(" ");
 
   return (
     <section 
       ref={containerRef}
-      className="relative h-[100svh] w-full overflow-hidden flex flex-col items-center justify-center bg-gg-dark perspective-1000"
+      className="relative min-h-[100svh] w-full overflow-hidden flex flex-col items-center justify-center text-center bg-gg-dark"
     >
-      {/* ==================== BACKGROUND LAYERS ==================== */}
-
-      {/* LAYER 1: Base */}
-      <div className="absolute inset-0 bg-[#050714] z-0" />
-
-      {/* LAYER 2: Video Grid (Cinematic Loop) */}
-      <div className="absolute inset-0 z-[1] grid grid-cols-1 md:grid-cols-3 opacity-20 md:opacity-30 pointer-events-none">
-        {VIDEOS.map((video, idx) => (
-          <div key={video.id} className={`relative w-full h-full overflow-hidden border-r border-gg-dark/50 ${isMobile && idx > 0 ? 'hidden' : 'block'}`}>
-            <motion.div
-              className="w-full h-full"
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1.25 }}
-              transition={{ 
-                duration: 20, 
-                repeat: Infinity, 
-                repeatType: "reverse", 
-                ease: "linear",
-                delay: idx * 5 
-              }}
-            >
-              {!isLowPower ? (
-                <video
-                  className="w-full h-full object-cover filter blur-[2px] contrast-125 saturate-0 md:saturate-50"
-                  poster={video.poster}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                >
-                   <source src={video.src} type="video/mp4" />
-                </video>
-              ) : (
-                <img src={video.poster} alt={video.label} className="w-full h-full object-cover blur-[1px]" />
-              )}
-            </motion.div>
-            {/* Genre Badge overlay on video */}
-            <div className="absolute top-4 left-4 text-[10px] font-mono font-bold tracking-widest text-white/40 border border-white/20 px-2 py-1 uppercase hidden md:block">
-              {video.genre} CAM
-            </div>
+      {/* LAYER 1: VIDEO BACKGROUND GRID */}
+      <div className="absolute inset-0 z-0 grid grid-cols-1 md:grid-cols-3 pointer-events-none">
+        {VIDEOS.map((video, index) => (
+          <div key={video.id} className="relative w-full h-full overflow-hidden border-r border-gg-dark/50">
+            {!isLowPower ? (
+              <video
+                className="absolute inset-0 w-full h-full object-cover opacity-20 md:opacity-25 blur-[2px] md:blur-[1px] scale-110"
+                poster={video.poster}
+                autoPlay
+                muted
+                loop
+                playsInline
+                // Optimization: Pause when hero is not in view
+                ref={el => {
+                  if (el) {
+                    isInView ? el.play().catch(() => {}) : el.pause();
+                  }
+                }}
+              >
+                {/* Lazy load source */}
+                {isInView && <source src={video.src} type="video/mp4" />}
+              </video>
+            ) : (
+              // Fallback for Low Power Mode
+              <img 
+                src={video.poster} 
+                alt={video.alt}
+                className="absolute inset-0 w-full h-full object-cover opacity-20 grayscale"
+              />
+            )}
+            {/* Individual Video Tint */}
+            <div className="absolute inset-0 bg-gg-dark/30 mix-blend-multiply" />
           </div>
         ))}
       </div>
 
-      {/* LAYER 3: Hex Grid Pattern */}
-      <div 
-        className="absolute inset-0 z-[2] opacity-[0.15] pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(30deg, #444 12%, transparent 12.5%, transparent 87%, #444 87.5%, #444),
-            linear-gradient(150deg, #444 12%, transparent 12.5%, transparent 87%, #444 87.5%, #444),
-            linear-gradient(30deg, #444 12%, transparent 12.5%, transparent 87%, #444 87.5%, #444),
-            linear-gradient(150deg, #444 12%, transparent 12.5%, transparent 87%, #444 87.5%, #444),
-            linear-gradient(60deg, #777 25%, transparent 25.5%, transparent 75%, #777 75%, #777),
-            linear-gradient(60deg, #777 25%, transparent 25.5%, transparent 75%, #777 75%, #777)
-          `,
-          backgroundSize: '40px 70px',
-          backgroundPosition: '0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px' 
-        }}
-      />
+      {/* LAYER 2: GRADIENT OVERLAYS (For Text Readability) */}
+      <div className="absolute inset-0 z-[5] bg-gradient-to-b from-gg-dark/80 via-transparent to-gg-dark" />
+      <div className="absolute inset-0 z-[5] bg-[radial-gradient(circle_at_center,transparent_0%,rgba(5,7,20,0.8)_100%)]" />
+      
+      {/* LAYER 3: PARTICLES */}
+      <motion.div style={{ y: yText }} className="absolute inset-0 z-[10] pointer-events-none">
+         <canvas ref={canvasRef} className="absolute inset-0" />
+      </motion.div>
 
-      {/* LAYER 4: Interactive Spotlight (Desktop Only) */}
-      <motion.div
-        className="absolute inset-0 z-[3] pointer-events-none hidden md:block mix-blend-overlay"
-        style={{
-          background: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(0, 217, 255, 0.15), transparent 80%)`,
-        }}
-      />
+      {/* LAYER 4: SCANLINES & FX */}
+      <div className="absolute inset-0 z-[15] pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] opacity-20" />
 
-      {/* LAYER 5: Retro Scanlines */}
-      <div className="absolute inset-0 z-[4] pointer-events-none bg-[url('https://media.giphy.com/media/xT9IgN8YKQnCg8T5V6/giphy.gif')] opacity-[0.02] bg-repeat mix-blend-screen" />
-      <div className="absolute inset-0 z-[4] pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] opacity-20" />
-
-      {/* LAYER 6: Vignette & Gradient Overlay */}
-      <div className="absolute inset-0 z-[5] bg-gradient-to-b from-gg-dark/90 via-gg-dark/50 to-gg-dark" />
-      <div className="absolute inset-0 z-[5] bg-[radial-gradient(circle_at_center,transparent_0%,#050714_110%)]" />
-
-      {/* ==================== CONTENT LAYER ==================== */}
-      <motion.div 
-        style={{ y: yText, opacity: opacityText }}
-        className="relative z-[20] flex flex-col items-center w-full max-w-7xl px-4 text-center"
-      >
+      {/* LAYER 5: CONTENT */}
+      <div className="relative z-[20] flex flex-col items-center max-w-7xl mx-auto space-y-6 md:space-y-8 w-full px-4">
         
-        {/* 1. LOGO WITH GLITCH */}
-        <div className="relative mb-6 md:mb-10 group cursor-default mt-16 md:mt-0">
-          <motion.h2 
-             initial={{ scale: 0.8, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             transition={{ duration: 0.8, ease: "easeOut" }}
-             className="relative z-10 text-6xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-gray-500 tracking-tighter filter drop-shadow-[0_0_10px_rgba(0,217,255,0.2)] leading-[0.85]"
-          >
-            GG WELLPLAYED
-          </motion.h2>
-          
-          {/* Glitch Duplicates - Adjusted for new size */}
-          <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-70 animate-glitch-1 mix-blend-screen text-6xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-gg-pink left-[3px] pointer-events-none leading-[0.85]">
-            GG WELLPLAYED
+        {/* Hardware Status Indicators (Visible only on low power) */}
+        {isLowPower && (
+          <div className="absolute top-4 right-4 flex gap-2">
+            <div title="Low Power Mode Active" className="bg-red-500/10 border border-red-500/30 p-2 rounded text-red-500 animate-pulse">
+              <Cpu size={16} />
+            </div>
           </div>
-          <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-70 animate-glitch-2 mix-blend-screen text-6xl sm:text-7xl md:text-[10rem] font-heading font-black italic text-gg-lime -left-[3px] pointer-events-none leading-[0.85]">
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-2 md:mb-6 relative inline-block group cursor-default max-w-full"
+        >
+          {/* Main Logo Text */}
+          <h2 className="relative z-10 text-5xl sm:text-6xl md:text-8xl font-heading font-black text-transparent bg-clip-text bg-gradient-to-r from-gg-cyan via-white to-gg-purple tracking-tighter filter drop-shadow-[0_0_15px_rgba(0,217,255,0.3)]">
+            GG WELLPLAYED
+          </h2>
+          
+          {/* Optimized Glitch Layers - Only animate transform, avoid clip-path on mobile if possible */}
+          <h2 className="absolute top-0 left-0 -z-10 text-5xl sm:text-6xl md:text-8xl font-heading font-black text-gg-cyan opacity-60 animate-glitch-1 tracking-tighter mix-blend-screen translate-x-[2px]" aria-hidden="true">
+            GG WELLPLAYED
+          </h2>
+          <h2 className="absolute top-0 left-0 -z-10 text-5xl sm:text-6xl md:text-8xl font-heading font-black text-gg-pink opacity-60 animate-glitch-2 tracking-tighter mix-blend-screen -translate-x-[2px]" aria-hidden="true">
             GG WELLPLAYED
           </div>
           <div className="absolute -inset-8 bg-gg-cyan/10 blur-[100px] rounded-full opacity-30 animate-pulse-slow pointer-events-none" />
         </div>
 
-        {/* 2. TYPEWRITER TITLE - Updated to Monospace for "System" look */}
-        <h1 className="h-12 md:h-20 flex items-center justify-center text-lg sm:text-2xl md:text-5xl font-mono font-bold text-white tracking-widest drop-shadow-2xl uppercase">
-          <span className="text-gg-cyan mr-2 md:mr-4">{">"}</span>
-          {headline.split("").map((char, index) => (
+        {/* Animated Headline */}
+        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-heading font-bold text-white flex flex-wrap justify-center gap-x-2 md:gap-x-4 gap-y-1 md:gap-y-2 drop-shadow-lg px-2 max-w-5xl leading-tight">
+          {words.map((word, i) => (
             <motion.span
-              key={index}
-              initial={{ opacity: 0, display: "none" }}
-              animate={{ opacity: 1, display: "inline" }}
-              transition={{ delay: 0.8 + (index * 0.04) }}
-              className={index < 4 || index > 12 ? "text-white" : "text-gg-cyan"} 
+              key={i}
+              initial={{ opacity: 0, filter: "blur(10px)", y: 20 }}
+              animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+              transition={{ delay: 0.3 + (i * 0.1), duration: 0.4 }}
+              className="cursor-default"
             >
               {char === " " ? "\u00A0" : char}
             </motion.span>
@@ -238,42 +316,38 @@ export const Hero: React.FC = () => {
           />
         </h1>
 
-        {/* 3. TAGLINE - Tech Specs with Icons */}
+        {/* Responsive Subheading */}
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.2, duration: 0.8 }}
-          className="mt-8 md:mt-10 flex flex-wrap justify-center items-center gap-x-4 md:gap-x-8 gap-y-4 max-w-5xl"
+          transition={{ delay: 1.2, duration: 0.8 }}
+          className="w-full flex justify-center px-4"
         >
-          {taglineItems.map((item, idx) => (
-            <div key={idx} className="flex items-center group">
-              {idx > 0 && <span className="text-gray-700 mr-4 md:mr-8 text-lg font-thin">/</span>}
-              <item.icon size={16} className={`mr-2 ${item.color} opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all`} />
-              <span className={`font-mono text-xs sm:text-sm md:text-base font-bold tracking-widest ${item.color} drop-shadow-md border-b border-transparent group-hover:border-current transition-all pb-0.5`}>
-                {item.text}
-              </span>
-            </div>
-          ))}
+           <p className="text-gg-text-sec text-xs sm:text-sm md:text-xl font-mono text-gray-300 leading-relaxed md:whitespace-nowrap text-center bg-gg-dark/40 backdrop-blur-sm px-4 py-2 rounded border border-white/5">
+            <span className="md:hidden block mb-1 text-white font-bold">Pune's Premier Gaming Destination</span>
+            <span className="hidden md:inline">Pune's Premier Gaming Destination | </span>
+            <span className="inline-block text-gg-cyan">High-End PCs</span> 
+            <span className="mx-2 text-gray-500">|</span> 
+            <span className="inline-block text-gg-purple">PS5</span> 
+            <span className="mx-2 text-gray-500">|</span> 
+            <span className="inline-block text-gg-pink">Tournaments</span>
+          </p>
         </motion.div>
 
-        {/* 4. CTA BUTTON */}
+        {/* CTA Button - High Accessibility & Touch Target */}
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.6 }}
-          whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0,217,255,0.3)" }}
+          transition={{ delay: 1.8 }}
+          whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0,217,255,0.4)" }}
           whileTap={{ scale: 0.95 }}
-          className="group relative px-10 py-5 md:px-14 md:py-6 bg-transparent overflow-hidden rounded-sm border-2 border-gg-cyan mt-12 md:mt-20 touch-manipulation cursor-pointer"
+          className="group relative px-8 py-4 md:px-10 md:py-5 bg-transparent overflow-hidden rounded-sm border-2 border-gg-cyan mt-6 md:mt-8 touch-manipulation"
           onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}
           aria-label="Book your gaming session now"
         >
-          {/* Scanline effect inside button */}
-          <div className="absolute inset-0 bg-[url('https://media.giphy.com/media/xT9IgN8YKQnCg8T5V6/giphy.gif')] opacity-10 mix-blend-overlay pointer-events-none" />
-          
           <div className="absolute inset-0 w-0 bg-gg-cyan transition-all duration-[250ms] ease-out group-hover:w-full opacity-100" />
-          
-          <span className="relative z-10 text-gg-cyan group-hover:text-gg-dark font-heading font-black text-xl md:text-2xl tracking-[0.2em] uppercase transition-colors duration-200 italic flex items-center gap-3">
-             Start Game
+          <span className="relative text-gg-cyan group-hover:text-gg-dark font-heading font-black text-lg md:text-xl tracking-widest uppercase transition-colors duration-200">
+            Book Your Session
           </span>
         </motion.button>
 
@@ -303,24 +377,19 @@ export const Hero: React.FC = () => {
         ))}
       </div>
 
-      {/* ==================== SCROLL INDICATOR ==================== */}
+      {/* Scroll Indicator */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 3.5 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-3 z-[20] pointer-events-none cursor-pointer"
-        onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
+        transition={{ delay: 2.5 }}
+        className="absolute bottom-6 md:bottom-10 left-1/2 transform -translate-x-1/2 text-gg-cyan flex flex-col items-center gap-2 z-[20] pointer-events-none"
       >
+        <span className="text-[10px] md:text-xs font-mono tracking-widest opacity-80 uppercase">Scroll to Explore</span>
         <motion.div
-           animate={{ y: [0, 10, 0] }}
-           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-           className="flex flex-col items-center"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
         >
-          <MousePointer2 size={24} className="text-gg-cyan mb-2" />
-          <span className="text-[10px] font-heading font-bold tracking-[0.2em] text-white uppercase bg-black/50 px-3 py-1 rounded-full border border-white/10 backdrop-blur">
-            Enter The Arena
-          </span>
-          <ArrowDown size={16} className="text-gg-cyan mt-1" />
+          <ArrowDown size={20} className="md:w-6 md:h-6 drop-shadow-[0_0_5px_#00D9FF]" />
         </motion.div>
       </motion.div>
 
