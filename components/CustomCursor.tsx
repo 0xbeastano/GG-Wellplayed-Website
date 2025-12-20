@@ -55,9 +55,9 @@ export const CustomCursor: React.FC = () => {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[9999] overflow-hidden hidden md:block mix-blend-difference">
-      {/* 1. Center Dot (Instant Tracking) */}
+      {/* 1. Center Dot (Instant Tracking) - RED */}
       <motion.div
-        className="absolute top-0 left-0 w-1.5 h-1.5 bg-gg-cyan rounded-full shadow-[0_0_10px_#00D9FF]"
+        className="absolute top-0 left-0 w-1.5 h-1.5 bg-gg-red rounded-full shadow-[0_0_10px_#FF003C]"
         style={{ x: cursorX, y: cursorY, translateX: "-50%", translateY: "-50%" }}
       />
       
@@ -69,8 +69,9 @@ export const CustomCursor: React.FC = () => {
           width: cursorVariant === 'hover' ? 60 : cursorVariant === 'text' ? 4 : 40,
           height: cursorVariant === 'hover' ? 60 : cursorVariant === 'text' ? 24 : 40,
           borderRadius: cursorVariant === 'hover' ? '50%' : cursorVariant === 'text' ? '2px' : '50%',
-          borderColor: cursorVariant === 'hover' ? '#00D9FF' : cursorVariant === 'text' ? '#9D00FF' : 'rgba(255,255,255,0.3)',
-          backgroundColor: cursorVariant === 'hover' ? 'rgba(0, 217, 255, 0.05)' : 'transparent',
+          // Color Logic: Red on hover, Purple on text, White/Translucent default
+          borderColor: cursorVariant === 'hover' ? '#FF003C' : cursorVariant === 'text' ? '#9D00FF' : 'rgba(255,255,255,0.3)',
+          backgroundColor: cursorVariant === 'hover' ? 'rgba(255, 0, 60, 0.05)' : 'transparent',
           rotate: cursorVariant === 'hover' ? 90 : 0
         }}
         transition={{ duration: 0.2 }}
@@ -83,18 +84,18 @@ export const CustomCursor: React.FC = () => {
           </>
         )}
 
-        {/* Lock-on Corners (Only in hover mode) */}
+        {/* Lock-on Corners (Only in hover mode) - RED */}
         {cursorVariant === 'hover' && (
           <div className="absolute inset-0 animate-spin-slow">
-            <div className="absolute top-0 left-1/2 w-1 h-2 bg-gg-cyan transform -translate-x-1/2" />
-            <div className="absolute bottom-0 left-1/2 w-1 h-2 bg-gg-cyan transform -translate-x-1/2" />
-            <div className="absolute left-0 top-1/2 w-2 h-1 bg-gg-cyan transform -translate-y-1/2" />
-            <div className="absolute right-0 top-1/2 w-2 h-1 bg-gg-cyan transform -translate-y-1/2" />
+            <div className="absolute top-0 left-1/2 w-1 h-2 bg-gg-red transform -translate-x-1/2" />
+            <div className="absolute bottom-0 left-1/2 w-1 h-2 bg-gg-red transform -translate-x-1/2" />
+            <div className="absolute left-0 top-1/2 w-2 h-1 bg-gg-red transform -translate-y-1/2" />
+            <div className="absolute right-0 top-1/2 w-2 h-1 bg-gg-red transform -translate-y-1/2" />
           </div>
         )}
       </motion.div>
 
-      {/* 3. Click Shockwave Effect */}
+      {/* 3. Click Shockwave Effect - RED */}
       <AnimatePresence>
         {clicks.map(click => (
           <motion.div
@@ -103,7 +104,7 @@ export const CustomCursor: React.FC = () => {
             animate={{ opacity: 0, scale: 2.5, borderWidth: "0px" }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="absolute rounded-full border-gg-pink bg-transparent shadow-[0_0_20px_#FF006E]"
+            className="absolute rounded-full bg-transparent shadow-[0_0_20px_#FF003C]"
             style={{ 
               left: click.x, 
               top: click.y, 
@@ -111,7 +112,7 @@ export const CustomCursor: React.FC = () => {
               height: 40, 
               marginLeft: -20, 
               marginTop: -20,
-              borderColor: '#FF006E'
+              borderColor: '#FF003C'
             }}
           />
         ))}

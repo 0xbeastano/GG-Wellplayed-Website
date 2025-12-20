@@ -113,6 +113,25 @@ export const Hero: React.FC = () => {
   const { scrollY } = useScroll();
   const yText = useTransform(scrollY, [0, 500], [0, 200]);
   
+  // Video Refs to manage playback
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  useEffect(() => {
+    videoRefs.current.forEach(video => {
+      if (!video) return;
+      if (isInView) {
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Auto-play was prevented
+          });
+        }
+      } else {
+        video.pause();
+      }
+    });
+  }, [isInView]);
+
   // Mouse Logic for Spotlight
   const handleMouseMove = (e: React.MouseEvent) => {
     const { clientX, clientY } = e;
@@ -134,9 +153,10 @@ export const Hero: React.FC = () => {
     >
       {/* LAYER 1: GAMING SCREENPLAYS - High Visibility */}
       <div className="absolute inset-0 z-0 grid grid-cols-1 md:grid-cols-3 pointer-events-none bg-black">
-        {VIDEOS.map((video) => (
+        {VIDEOS.map((video, idx) => (
           <div key={video.id} className="relative w-full h-full overflow-hidden border-r border-black/50">
             <video
+              ref={el => { videoRefs.current[idx] = el }}
               className="absolute inset-0 w-full h-full object-cover"
               poster={video.poster}
               autoPlay
@@ -144,9 +164,8 @@ export const Hero: React.FC = () => {
               loop
               playsInline
               style={{ opacity: 0.85 }} // 85% Opacity for high visibility
-              ref={el => { if (el && isInView) el.play().catch(() => {}); else if(el) el.pause(); }}
             >
-              {isInView && <source src={video.src} type="video/mp4" />}
+              <source src={video.src} type="video/mp4" />
             </video>
             
             {/* Polished Overlay: Lighter than before to show gameplay */}

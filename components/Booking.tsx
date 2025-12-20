@@ -94,7 +94,8 @@ export const Booking: React.FC = () => {
   // Security: Rate Limiter
   const checkRateLimit = (): boolean => {
     try {
-        const history = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || '[]');
+        const stored = localStorage.getItem(RATE_LIMIT_KEY);
+        const history = stored ? JSON.parse(stored) : [];
         const now = Date.now();
         const windowTime = 5 * 60 * 1000; // 5 minutes
         const limit = 3;
@@ -110,7 +111,9 @@ export const Booking: React.FC = () => {
         localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(recentAttempts));
         return true;
     } catch (e) {
-        return true; // Fail open if storage is disabled/error
+        // Fail open if local storage is blocked (e.g. Incognito mode in some browsers)
+        console.warn("Rate limiting unavailable:", e);
+        return true; 
     }
   };
 
