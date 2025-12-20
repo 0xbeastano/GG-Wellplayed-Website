@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 
+// Video Configuration Interface
 interface VideoConfig {
   id: string;
-  src: string;
+  src: string; // Using placeholders for demo, replace with local assets
   poster: string;
   alt: string;
 }
