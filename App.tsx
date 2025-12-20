@@ -12,6 +12,8 @@ import { LocationContact } from './components/LocationContact';
 import { Footer } from './components/Footer';
 import { CustomCursor } from './components/CustomCursor';
 import { Dashboard } from './components/Dashboard';
+import { Navbar } from './components/Navbar';
+import { FAQ } from './components/FAQ';
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -128,16 +130,18 @@ const App: React.FC = () => {
   return (
     <div className="bg-gg-dark text-white relative md:cursor-none overflow-x-hidden selection:bg-gg-cyan selection:text-gg-dark">
       <CustomCursor />
+      <Navbar />
       <Dashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
       
       <main className="relative z-10 w-full overflow-hidden">
         <Hero />
-        <Facilities />
-        <Pricing />
+        <div id="facilities"><Facilities /></div>
+        <div id="pricing"><Pricing /></div>
         <Features />
-        <GamesLibrary />
-        <Tournaments />
+        <div id="games"><GamesLibrary /></div>
+        <div id="tournaments"><Tournaments /></div>
         <Testimonials />
+        <FAQ />
         <Booking />
         <LocationContact />
       </main>

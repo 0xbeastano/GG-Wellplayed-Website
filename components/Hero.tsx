@@ -163,46 +163,26 @@ export const Hero: React.FC = () => {
       animationFrameId = requestAnimationFrame(render);
     };
 
-  // Performance State
-  const [isLowPower, setIsLowPower] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  
-  // Typewriter Effect State
-  const [titleVisible, setTitleVisible] = useState(false);
+    render();
 
-  // --- MOUSE TRACKING ---
-  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isMobile) return;
       targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
       targetMouseY = (e.clientY / window.innerHeight) * 2 - 1;
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
 
-  // --- PERFORMANCE MONITOR & SETUP ---
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-    setTitleVisible(true);
-
-    // FPS Monitor
-    let frameCount = 0;
-    let lastTime = performance.now();
-    const monitorFps = () => {
-      const now = performance.now();
-      frameCount++;
-      if (now - lastTime >= 1000) {
-        if (frameCount < 30) setIsLowPower(true);
-        frameCount = 0;
-        lastTime = now;
-      }
-      requestAnimationFrame(monitorFps);
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     };
-    const raf = requestAnimationFrame(monitorFps);
 
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('mousemove', handleMouseMove);
+    
     return () => {
-      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
     };
   }, [isMobile, isLowPower]);
 
@@ -291,9 +271,8 @@ export const Hero: React.FC = () => {
           </h2>
           <h2 className="absolute top-0 left-0 -z-10 text-5xl sm:text-6xl md:text-8xl font-heading font-black text-gg-pink opacity-60 animate-glitch-2 tracking-tighter mix-blend-screen -translate-x-[2px]" aria-hidden="true">
             GG WELLPLAYED
-          </div>
-          <div className="absolute -inset-8 bg-gg-cyan/10 blur-[100px] rounded-full opacity-30 animate-pulse-slow pointer-events-none" />
-        </div>
+          </h2>
+        </motion.div>
 
         {/* Animated Headline */}
         <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-heading font-bold text-white flex flex-wrap justify-center gap-x-2 md:gap-x-4 gap-y-1 md:gap-y-2 drop-shadow-lg px-2 max-w-5xl leading-tight">
@@ -305,15 +284,9 @@ export const Hero: React.FC = () => {
               transition={{ delay: 0.3 + (i * 0.1), duration: 0.4 }}
               className="cursor-default"
             >
-              {char === " " ? "\u00A0" : char}
+              {word}
             </motion.span>
           ))}
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ duration: 0.8, repeat: Infinity }}
-            className="ml-2 w-2 md:w-3 h-4 md:h-8 bg-gg-cyan inline-block align-middle"
-          />
         </h1>
 
         {/* Responsive Subheading */}
@@ -350,31 +323,6 @@ export const Hero: React.FC = () => {
             Book Your Session
           </span>
         </motion.button>
-
-      </motion.div>
-
-      {/* ==================== FLOATING ELEMENTS (Icons) ==================== */}
-      <div className="absolute inset-0 z-[10] pointer-events-none overflow-hidden">
-        {floatingIcons.map((item, idx) => (
-          <motion.div
-            key={idx}
-            className="absolute text-gg-cyan/20 hidden md:block"
-            style={{ left: item.x, top: item.y }}
-            animate={{ 
-              y: [0, -20, 0], 
-              opacity: [0.1, 0.3, 0.1],
-              rotate: [0, 10, -10, 0]
-            }}
-            transition={{ 
-              duration: 5, 
-              delay: item.delay, 
-              repeat: Infinity,
-              ease: "easeInOut" 
-            }}
-          >
-            <item.Icon size={64} strokeWidth={1} />
-          </motion.div>
-        ))}
       </div>
 
       {/* Scroll Indicator */}
@@ -392,7 +340,6 @@ export const Hero: React.FC = () => {
           <ArrowDown size={20} className="md:w-6 md:h-6 drop-shadow-[0_0_5px_#00D9FF]" />
         </motion.div>
       </motion.div>
-
     </section>
   );
 };
