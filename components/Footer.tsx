@@ -1,5 +1,5 @@
 import React from 'react';
-import { Twitter, Instagram, Youtube, Twitch, Disc, Lock } from 'lucide-react';
+import { Twitter, Instagram, Youtube, Twitch, Facebook, Lock } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const triggerDashboard = (e: React.MouseEvent) => {
@@ -8,11 +8,10 @@ export const Footer: React.FC = () => {
   };
 
   const socialLinks = [
-    { icon: Instagram, label: "Instagram" },
-    { icon: Twitter, label: "Twitter" },
-    { icon: Youtube, label: "YouTube" },
-    { icon: Twitch, label: "Twitch" },
-    { icon: Disc, label: "Discord" }
+    { icon: Instagram, label: "Instagram", url: "https://www.instagram.com/ggwellplayedcafe/" },
+    { icon: Youtube, label: "YouTube", url: "https://www.youtube.com/c/GGwellplayed" },
+    { icon: Facebook, label: "Facebook", url: "https://www.facebook.com/ggwellplayedgamingcafe/" },
+    { icon: Twitch, label: "Twitch", url: "#" }
   ];
 
   return (
@@ -25,7 +24,9 @@ export const Footer: React.FC = () => {
               {socialLinks.map((item, i) => (
                 <a 
                   key={i} 
-                  href="#" 
+                  href={item.url}
+                  target={item.url !== '#' ? "_blank" : "_self"}
+                  rel="noopener noreferrer"
                   aria-label={`Visit our ${item.label}`}
                   className="w-10 h-10 rounded-full bg-gg-dark flex items-center justify-center text-gray-400 hover:text-gg-cyan hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gg-cyan"
                 >
@@ -38,7 +39,7 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="font-bold text-white mb-6 uppercase tracking-wider">Quick Links</h3>
             <ul className="space-y-4 text-gray-400">
-              {['Home', 'Pricing', 'Tournaments', 'About Us', 'Contact'].map((item) => (
+              {['Home', 'Pricing', 'Games', 'About Us', 'Contact'].map((item) => (
                 <li key={item}>
                   <a href="#" className="hover:text-gg-cyan transition-colors relative group focus:text-gg-cyan focus:outline-none">
                     {item}
@@ -53,6 +54,7 @@ export const Footer: React.FC = () => {
             <h3 className="font-bold text-white mb-6 uppercase tracking-wider">Contact</h3>
             <ul className="space-y-4 text-gray-400 text-sm">
               <li>Satara Rd, Pune, MH</li>
+              <li>Kojagiri Building, 2nd Floor</li>
               <li>hello@ggwellplayed.in</li>
               <li>+91 98765 43210</li>
             </ul>

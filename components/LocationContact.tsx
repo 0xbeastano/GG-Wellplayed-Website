@@ -1,14 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Map as MapIcon } from 'lucide-react';
 
 export const LocationContact: React.FC = () => {
   return (
     <section className="min-h-screen flex flex-col md:flex-row bg-gg-dark">
       {/* Map Side */}
       <div className="w-full md:w-1/2 h-[300px] md:h-auto relative overflow-hidden border-b md:border-b-0 md:border-r border-gray-800 order-2 md:order-1">
+         {/* Updated to use a Search Query Embed for better accuracy with dynamic addresses */}
          <iframe 
-           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3783.826724653457!2d73.8562723!3d18.4913501!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c00293077e6d%3A0xc6c7d5c5f5a8a8a8!2sSatara%20Rd%2C%20Pune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" 
+           src="https://maps.google.com/maps?q=GGwellplayed%20Gaming%20Cafe%2C%20Satara%20Rd%2C%20Pune&t=&z=16&ie=UTF8&iwloc=&output=embed"
            width="100%" 
            height="100%" 
            style={{ border: 0, filter: 'grayscale(100%) invert(90%) contrast(85%)' }} 
@@ -16,14 +17,17 @@ export const LocationContact: React.FC = () => {
            loading="lazy"
            title="Location Map showing GGwellplayed Gaming Cafe"
          ></iframe>
-         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
             <div className="relative">
                <div className="absolute inset-0 bg-gg-cyan rounded-full animate-ping opacity-75 h-12 w-12" />
                <div className="relative bg-gg-cyan rounded-full h-4 w-4 border-2 border-white shadow-[0_0_15px_#00D9FF]" />
             </div>
          </div>
          <div className="absolute bottom-4 left-4 right-4 bg-gg-dark/90 p-3 md:p-4 rounded border border-gg-cyan/30 backdrop-blur-md">
-            <p className="text-xs md:text-sm font-mono text-gg-cyan">LOCATED AT: SATARA ROAD, PUNE</p>
+            <p className="text-xs md:text-sm font-mono text-gg-cyan font-bold">LOCATED AT: SATARA ROAD, PUNE</p>
+            <p className="text-[10px] text-gray-400 mt-1 font-mono flex items-center gap-1">
+                <MapIcon size={10} /> PLUS CODE: FV65+F8
+            </p>
          </div>
       </div>
 
@@ -71,8 +75,12 @@ export const LocationContact: React.FC = () => {
 
         <div className="grid grid-cols-1 gap-4 text-sm text-gray-400">
           <div className="flex items-start">
-            <MapPin className="mr-3 text-gg-purple flex-shrink-0" size={20} aria-hidden="true" />
-            <p>Survey No 25, 2nd Floor, Kojagiri Building, Satara Rd, Pune, MH 411043</p>
+            <MapPin className="mr-3 text-gg-purple flex-shrink-0 mt-1" size={20} aria-hidden="true" />
+            <p className="leading-relaxed">
+              Sr. No 25, 2nd Floor, Kojagiri Building, Satara Rd,<br />
+              opp. Canera Bank, Shridharnagar, Vivek Nagar,<br />
+              Chaitanya Nagar, Pune, Maharashtra 411043
+            </p>
           </div>
           <div className="flex items-center">
             <Phone className="mr-3 text-gg-purple flex-shrink-0" size={20} aria-hidden="true" />

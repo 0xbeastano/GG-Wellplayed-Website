@@ -132,14 +132,16 @@ export const Hero: React.FC = () => {
       className="relative min-h-[100svh] w-full overflow-hidden flex flex-col items-center justify-center text-center bg-gg-dark perspective-1000 px-4 touch-manipulation"
     >
       {/* LAYER 1: BACKGROUND GRID (IMAGES + VIDEOS) */}
-      <div className="absolute inset-0 z-0 grid grid-cols-1 md:grid-cols-3 pointer-events-none bg-black">
+      <div className="absolute inset-0 z-0 grid grid-cols-1 md:grid-cols-3 pointer-events-none bg-gg-dark">
         {VIDEOS.map((video, idx) => (
           <div key={video.id} className="relative w-full h-full overflow-hidden border-b md:border-b-0 md:border-r border-black/50 group">
             
-            {/* 1. Background Image Layer (Always visible, ensures no black screen) */}
-            <div 
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 z-0"
-              style={{ backgroundImage: `url(${video.poster})` }}
+            {/* 1. Background Image Layer (Uses img tag for reliability) */}
+            <img 
+              src={video.poster}
+              alt={video.alt}
+              className="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover:scale-105"
+              loading="eager"
             />
             
             {/* 2. Video Layer (Starts invisible, fades in if loaded) */}
